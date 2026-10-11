@@ -124,6 +124,7 @@ nav button.on{color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,trans
 @keyframes spb{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (prefers-reduced-motion:reduce){#splash *,#splash::before{animation-duration:.01s!important;animation-delay:0s!important}}
 </style>
+<style id="gatefix">#gate{align-items:flex-start!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;padding:12px 0}#gate>*{margin:auto}</style>
 </head>
 <body>
 <div id="splash" aria-hidden="true"><div class="sp-bg"></div><div class="sp-c"><div class="sp-lw"><svg class="sp-logo" viewBox="0 0 140 130" aria-hidden="true"><defs><linearGradient id="spg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#fb2f7d"/></linearGradient><linearGradient id="spp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e6d3e6"/></linearGradient></defs><g class="sp-book"><path d="M70 118C56 108 34 106 16 112V82C34 76 56 78 70 90Z" fill="url(#spp)"/><path d="M70 118C84 108 106 106 124 112V82C106 76 84 78 70 90Z" fill="url(#spp)" opacity=".9"/></g><g class="sp-cap"><path d="M40 44V64C40 76 100 76 100 64V44L70 56Z" fill="url(#spg)" opacity=".85"/><polygon points="70,8 128,30 70,52 12,30" fill="url(#spg)"/><polygon points="70,8 128,30 70,52 12,30" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/></g><g class="sp-tas"><line x1="120" y1="33" x2="120" y2="62" stroke="#f9a8d4" stroke-width="2.5"/><circle cx="120" cy="66" r="4.5" fill="#f9a8d4"/></g></svg></div><div class="spn"></div><div class="spt">Smart school app</div></div><div class="spbar"><i></i></div></div>
@@ -429,13 +430,13 @@ async function push(){if(!fbU||!fbdb||!dirty&&lastCloud)return;const u=fbU.uid,s
 function pushSoon(){if(!fbU)return;dirty=true;clearTimeout(pushT);pushT=setTimeout(push,4000)}
 function freshS(){S=norm(JSON.parse(JSON.stringify(DEF)));PH={}}
 function saveLocal(){try{localStorage.setItem("cb2",JSON.stringify(S));localStorage.setItem("cbph",JSON.stringify(PH))}catch(e){}}
-async function onUser(u){fbU=u;if(isOwner()){if(!window._supFresh){gTab="sup";await fbAuth.signOut();setTimeout(()=>gate(PG==="super"?"Super admin: enter the email and password again.":"For super admin, open the super admin link."),0);return}freshS();setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";hideGate();render();cstat("👑 Super admin: "+acctShow(u.email));return}await licLoad(u);const id=u.uid,prev=lsGet("cbuid");let cloud=null,net=true;
+async function onUser(u){fbU=u;if(isOwner()){if(!window._supFresh){gTab="sup";await fbAuth.signOut();setTimeout(()=>gate(PG==="super"?"Super admin: enter the email and password again.":"For super admin, open the super admin link."),0);return}freshS();setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";hideGate();render();cstat("👑 Super admin: "+acctShow(u.email));return}if(PG==="super"){fbU=null;try{await fbAuth.signOut()}catch(e){}gate("");return}await licLoad(u);const id=u.uid,prev=lsGet("cbuid");let cloud=null,net=true;
  try{const r=await readSet((a,x)=>cdoc(a,x),id,"");if(r){cloud=JSON.parse(r.str);lastCloud=r.str;lastN=Math.ceil(r.str.length/CH)}}catch(e){net=false}
  let loc=null;if(prev===id)loc={S,PH,u:S.__u||0};else{try{if(prev){localStorage.setItem("cb2@"+prev,cpl())}const r=lsGet("cb2@"+id);if(r)loc=JSON.parse(r);else if(!lsGet("cbhad"))loc={S,PH,u:S.__u||1}}catch(e){}}
  if(cloud&&(!loc||(cloud.u||0)>(loc.u||0))){S=norm(cloud.S);PH=cloud.PH||{}}else if(loc){S=norm(loc.S);PH=loc.PH||{};if(net)dirty=true}else{freshS();dirty=true}
  try{localStorage.setItem("cbuid",id);localStorage.setItem("cbhad","1")}catch(e){}saveLocal();if(!licOK()){paywall();cstat("A plan is required");return}hideGate();if(isOwner()){setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";render();cstat("👑 Super admin: "+acctShow(u.email))}else{me=null;render();cstat(net?"☁ Account: "+acctShow(u.email):"⚠ Offline: kaam local save hota rahega")}if(net&&dirty){lastCloud=lastCloud;push()}}
 function gate(msg){let g=$("gate");if(!g){g=document.createElement("div");g.id="gate";g.style.cssText="position:fixed;inset:0;z-index:200;background:var(--bg,#fff);color:var(--ink,#111);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto";document.body.appendChild(g)}
- g.innerHTML=`<div style="max-width:380px;width:100%"><div style="display:flex;gap:6px;margin-bottom:10px"></div>${PG==="super"?superBox(msg):`<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">🏫 ${esc((S.settings||{}).school||"Schooling")}</div><p class="stat">Sign in to the school account. Your full data is backed up in this account and can be restored on any phone.</p><input id="ge" type="text" inputmode="email" placeholder="School email ya mobile number" autocomplete="username" style="margin:6px 0"><input id="gp" type="password" placeholder="Password (at least 6)" autocomplete="current-password" style="margin:6px 0"><button class="btn" style="width:100%;margin:6px 0" onclick="gAuth(0)">Login</button><p class="stat" style="text-align:center">Logins are created by the admin only. Contact the admin for a new login.</p><button class="ghost" style="width:100%" onclick="gReset()">Password bhool gaye?</button>${FBCFG?"":`<button class="ghost" style="width:100%;margin-top:6px" onclick="localStorage.removeItem('cbfbcfg');location.reload()">🔧 Testing: bina cloud ke kholein (admin / 1234)</button>`}<p class="err" id="gm" role="alert">${msg||""}</p></div>`}</div></div>`}
+ g.innerHTML=`<div style="max-width:380px;width:100%"><div style="display:flex;gap:6px;margin-bottom:10px"></div>${PG==="super"?superBox(msg):`<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">🏫 ${esc((S.settings||{}).school||"Schooling")}</div><p class="stat">Sign in to the school account. Your full data is backed up in this account and can be restored on any phone.</p><input id="ge" type="text" inputmode="email" placeholder="School email ya mobile number" autocomplete="username" style="margin:6px 0"><input id="gp" type="password" placeholder="Password (at least 6)" autocomplete="current-password" style="margin:6px 0"><button class="btn" style="width:100%;margin:6px 0" onclick="gAuth(0)">Login</button><p class="stat" style="text-align:center">Logins are created by the admin only. Contact the admin for a new login.</p>${FBCFG?"":`<button class="ghost" style="width:100%;margin-top:6px" onclick="localStorage.removeItem('cbfbcfg');location.reload()">🔧 Testing: bina cloud ke kholein (admin / 1234)</button>`}<p class="err" id="gm" role="alert">${msg||""}</p></div>`}</div></div>`}
 const PG=(new URLSearchParams(location.search).get("p")||"school").toLowerCase();
 let gTab="sch";function gTabSet(k){gTab=k;gate("")}
 function superBox(msg){return `<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">👑 Super admin login</div><p class="stat">Super admin Firebase email and password. This login is separate from the school login.</p><input id="sue" type="email" inputmode="email" placeholder="Super admin email" autocomplete="username" style="margin:6px 0"><input id="sup_pw" type="password" placeholder="Password" autocomplete="current-password" style="margin:6px 0" onkeydown="if(event.key==='Enter')superLogin()"><button class="btn" style="width:100%;margin:6px 0" onclick="superLogin()">Super admin login</button><p class="err" id="gm" role="alert">${msg||""}</p></div>`}
@@ -448,8 +449,9 @@ const acctId=v=>{v=(v||"").trim();if(v.includes("@"))return v;const d=v.replace(
 async function gAuth(nw){if(nw){$("gm").textContent="Only the admin can create a new account.";return}const e=acctId($("ge").value),p=$("gp").value,m=$("gm");m.textContent="Please wait...";try{nw?await fbAuth.createUserWithEmailAndPassword(e,p):await fbAuth.signInWithEmailAndPassword(e,p);logLogin("school")}catch(x){m.textContent=gErr(x)}}
 async function gReset(){const e=acctId($("ge").value),m=$("gm");if(!e){m.textContent="Enter your email first.";return}if(e.endsWith("@phone.schooling.app")){m.textContent="Password reset by email does not work for mobile number accounts. Create an account with email or contact the admin.";return}try{await fbAuth.sendPasswordResetEmail(e);m.textContent="Reset link sent to your email."}catch(x){m.textContent=gErr(x)}}
 async function acctStart(){if(!cloudOn())return;gate("Checking account...");if(!await fbBoot()){const id=lsGet("cbuid");if(id){hideGate();cstat("⚠ Offline: kaam local save hota rahega");return}gate("The first login needs internet.");return}
+ try{await fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION)}catch(e){}
  fbAuth.onAuthStateChanged(u=>{if(u)onUser(u);else{fbU=null;gate("")}})}
-async function acctOut(){if(!isAd()||!confirm("Sign out of the school account? Data will be removed from this phone (it stays safe in the cloud)."))return;await push();try{localStorage.setItem("cb2@"+fbU.uid,cpl());localStorage.removeItem("cb2");localStorage.removeItem("cbph");localStorage.removeItem("cbuid")}catch(e){}fbU=null;await fbAuth.signOut();freshS();me=null;lastCloud="";gate("")}
+async function acctOut(){if(!fbU&&!isAd())return;if(!confirm("Sign out of the school account? Data will be removed from this phone (it stays safe in the cloud)."))return;try{await push()}catch(e){}try{if(fbU)localStorage.setItem("cb2@"+fbU.uid,cpl());localStorage.removeItem("cb2");localStorage.removeItem("cbph");localStorage.removeItem("cbuid")}catch(e){}fbU=null;try{await fbAuth.signOut()}catch(e){}freshS();me=null;lastCloud="";gate("")}
 async function snapsLoad(){const el=$("snaps");if(!el||!fbU)return;try{const q=await fbdb.collection("schools").doc(fbU.uid).collection("snap").get(),ds=q.docs.map(d=>d.id).filter(x=>x.endsWith("_m")).map(x=>x.slice(0,10)).sort().reverse();el.innerHTML=ds.length?ds.map(d=>`<option>${d}</option>`).join(""):"<option value=''>No older version yet</option>"}catch(e){el.innerHTML="<option value=''>Could not load</option>"}}
 async function restoreSnap(){const d=$("snaps").value;if(!d||!isAd()||!confirm(d+" ? Current data is already kept safely in the backup."))return;await push();try{const r=await readSet((a,id)=>fbdb.collection("schools").doc(a).collection("snap").doc(id),fbU.uid,d+"_");if(!r){alert("This version was not found.");return}const o=JSON.parse(r.str);S=norm(o.S);PH=o.PH||{};S.__u=Date.now();lastCloud=lastCloud;saveLocal();dirty=true;push();render()}catch(e){alert("Could not restore.")}}
 function saveFbCfg(){const t=$("fbc").value.trim();try{const o=JSON.parse(t.replace(/^[^{]*/,"").replace(/;?\s*$/,"").replace(/([{,]\s*)([A-Za-z_]+)\s*:/g,'$1"$2":').replace(/'/g,'"'));if(!o.apiKey||!o.projectId)throw 0;localStorage.setItem("cbfbcfg",JSON.stringify(o));location.reload()}catch(e){alert("Invalid config. Paste the full Firebase config.")}}
@@ -739,7 +741,7 @@ async function init(){norm(S);try{PH=JSON.parse(localStorage.getItem("cbph")||"{
 // actions
 const tabs0=()=>{if(window.isSuper&&isSuper())return{sa:"Super",tc:"Teachers",st:"Students"};if(me.role==="t"&&me.admin&&window.adminTabs)return adminTabs();if(me.role!=="t")return {me:"My child",gd:"Guide",tt:"Timetable",ex:"Exams",lv:"Leave",nt:"Notices",hw:"Homework",ev:"Events",cu:"Curriculum",qz:"Quizzes",ms:"Messages",ap:"Appearance"};
  const T={hm:"Dashboard",att:"Attendance",gr:"Grades",fee:"Fees",nt:"Notices",hw:"Homework",ev:"Events",cu:"Curriculum",qz:"Quizzes",tt:"Timetable",ex:"Exams",pp:"Papers",gd:"Guide",lv:"Leaves"+(pn()?" ("+pn()+")":""),ms:"Messages",st:"Students",tc:"Teachers",se:"Settings",ap:"Appearance"};
- if(!isFM())delete T.att;if(!me.admin){delete T.fee;delete T.tc;delete T.se;if(me.subs&&me.subs.length){if(!isFM())delete T.st;delete T.lv}}return T};const tabs=()=>{const t=tabs0();return window.slimTabs?slimTabs(t):t};
+ if(!isFM())delete T.att;if(!me.admin){delete T.fee;delete T.tc;delete T.se;if(me.subs&&me.subs.length){if(!isFM())delete T.st;delete T.lv}}if(!me.admin&&can("gr"))T.rsc="Result cards";return T};const tabs=()=>{const t=tabs0();return window.slimTabs?slimTabs(t):t};
 function signin0(){const e=$("err");if(!S.settings.pinLogin&&!isOwn){e.textContent="Sign-in is turned off. Ask the admin.";return}
  const u=$("lu").value.trim().toLowerCase(),p=$("lp").value,bad="Wrong username or password.";
  if(u==="admin"){if(p!==S.pin){e.textContent=bad;return}me={role:"t",admin:true};link("a");cls=1;tab="hm"}
@@ -2461,6 +2463,143 @@ window.alDel=function(id){if(!isAd()||!confirm("Remove this record?"))return;S.a
 /* show in admin tab bar + More menu */
 const a0=window.adminTabs;window.adminTabs=function(){const r=a0.apply(this,arguments);if(!r[tab]&&NEW5[tab])r[tab]=NEW5[tab];return r};
 const m0=V.more;V.more=function(){const x=m0.apply(this,arguments);if(!isAd())return x;const mine=Object.keys(NEW5).filter(k=>!x.includes("tab='"+k+"'")).map(k=>`<button onclick="tab='${k}';render()"><span>${IC[k]}</span>${NEW5[k]}</button>`).join("");return x.replace(/<button onclick="logout\(\)">/,mine+"$&")};
+})();
+(function(){
+/* ===== RESULT CARDS: builder, 30 layouts, school customisation, teacher marks entry, print and bulk ===== */
+IC.rsc="🧾";
+const NEW6={rsc:"Result cards"};
+const RSDES=[["r1","Classic double border"],["r2","Solid header band"],["r3","Minimal top rule"],["r4","Left colour strip"],["r5","Centred crest, serif"],["r6","Ribbon title"],["r7","Navy and gold"],["r8","Soft pastel"],["r9","Corner accent"],["r10","Slanted header"],["r11","Zebra table"],["r12","Formal boxed serif"],["r13","Watermark"],["r14","Underlined headings"],["r15","Grade pills"],["r16","Uppercase sans"],["r17","Inset frame"],["r18","Top and bottom bars"],["r19","Full grid boxes"],["r20","Monospace report"],["r21","Gradient header"],["r22","Bottom accent band"],["r23","Minimal centred"],["r24","Shadow card"],["r25","Accent total row"],["r26","Gold certificate frame"],["r27","Round photo and score"],["r28","Coloured grade cells"],["r29","Compact dense"],["r30","Dark night"]];
+/* each design: & is replaced by .rc.rN at build time */
+const RSCSS={
+r1:"&{border:1.2mm double var(--a)}",
+r2:"& .rh{background:var(--a);color:#fff;padding:7mm 10mm;margin:-10mm -10mm 0;border:0}& .rt b,& .rt span,& .rt small{color:#fff}",
+r3:"& .rh{border:0;border-top:1.2mm solid var(--a);padding-top:4mm}& .rx th{background:none;color:var(--a);border:0;border-bottom:.5mm solid var(--a)}& .rx td{border:0;border-bottom:.2mm solid #e2e8f0}& .rsum th,& .rsum td{border:0}",
+r4:"&{border-left:7mm solid var(--a);padding-left:8mm}",
+r5:"&{font-family:Georgia,'Times New Roman',serif}& .rh{flex-direction:column;text-align:center}& img.lg{width:26mm;height:26mm}",
+r6:"& .rt b{display:inline-block;background:var(--a);color:#fff;padding:1.5mm 8mm;border-radius:1mm}",
+r7:"&{background:#0f172a;color:#f8fafc}& .rh{border-color:#facc15}& .rt b{color:#facc15}& .rt small,& .ri i{color:#cbd5e1}& .rx th{background:#facc15;color:#0f172a}& .rx td,& .rx th,& .rsum td,& .rsum th{border-color:#334155}& .rx td{color:#f8fafc}& .rsum th{background:#1e293b;color:#facc15}& .rsum td{color:#f8fafc;background:#0f172a}& .rrm,& .rsg span{color:#e2e8f0;border-color:#475569}& .rsg span{border-top-color:#facc15}& .rf{color:#94a3b8}",
+r8:"&{background:#f8fafc;border-radius:6mm}& .rx,& .rsum{border-radius:3mm;overflow:hidden}& .rx th{background:color-mix(in srgb,var(--a) 22%,#fff);color:#111}& .rrm{border-radius:3mm;background:#fff}& .rp{border-radius:50%}",
+r9:"&::before{content:'';position:absolute;right:0;top:0;width:45mm;height:45mm;background:var(--a);clip-path:polygon(100% 0,0 0,100% 100%);opacity:.9}",
+r10:"& .rh{background:var(--a);color:#fff;clip-path:polygon(0 0,100% 0,100% 62%,0 100%);margin:-10mm -10mm 0;padding:9mm 12mm 14mm;border:0}& .rt b,& .rt span,& .rt small{color:#fff}",
+r11:"& .rx tbody tr:nth-child(even) td{background:#eef2f7}& .rx td,& .rx th{border:0}& .rx th{padding:2.5mm}",
+r12:"&{font-family:Georgia,'Times New Roman',serif}& .rx th,& .rx td,& .rsum th,& .rsum td{border:.3mm solid #111}& .rx th,& .rsum th{background:#fff;color:#111;border-bottom:.6mm solid #111}& .rrm{border:.3mm solid #111}& .rt b{font-variant:small-caps;font-size:19pt}",
+r13:"&::after{content:attr(data-w);position:absolute;left:0;right:0;top:42%;text-align:center;font-size:44pt;font-weight:900;color:rgba(15,23,42,.06);transform:rotate(-24deg);pointer-events:none;white-space:nowrap}",
+r14:"& .rt b{border-bottom:.5mm solid var(--a);display:inline-block;padding-bottom:1mm}& .rx th{background:none;color:var(--a);border:0;border-bottom:.6mm solid var(--a)}& .rx td{border:0;border-bottom:.2mm solid #cbd5e1}",
+r15:"& .rx td.g span{display:inline-block;background:var(--a);color:#fff;border-radius:99mm;padding:0 3mm;font-weight:700}",
+r16:"&{font-family:Helvetica,Arial,sans-serif}& .rt b{text-transform:uppercase;letter-spacing:1mm}& .rx th,& .rsum th{text-transform:uppercase;letter-spacing:.3mm;font-size:8pt}",
+r17:"&{border:.4mm solid var(--a);outline:.4mm solid var(--a);outline-offset:-4mm}",
+r18:"&{border-top:6mm solid var(--a);border-bottom:6mm solid var(--a)}",
+r19:"& .rx th,& .rx td,& .rsum th,& .rsum td{border:.35mm solid #334155}& .rrm,& .rsg span{border:.35mm solid #334155}& .rx td{padding:3mm 2.5mm}",
+r20:"&{font-family:'Courier New',Courier,monospace;font-size:9pt}& .rt b{font-size:14pt}& .rx th{background:#111;color:#fff}& .rh{border-bottom-style:dashed}",
+r21:"& .rh{background:linear-gradient(120deg,var(--a),#1e293b);color:#fff;padding:7mm 10mm;margin:-10mm -10mm 0;border:0}& .rt b,& .rt span,& .rt small{color:#fff}",
+r22:"& .rf{margin:auto -10mm -10mm;padding:3mm 10mm;background:var(--a);color:#fff}",
+r23:"& .rh{border:0}& .rt b{font-size:13pt;letter-spacing:1.6mm}& .rt span{font-size:10pt;font-weight:400}& .rt{text-transform:uppercase}",
+r24:"&{box-shadow:0 2mm 10mm rgba(15,23,42,.22);border-radius:4mm}& .rrm{background:color-mix(in srgb,var(--a) 8%,#fff)}",
+r25:"& .rsum td{background:var(--a);color:#fff;font-size:12pt}& .rsum th{background:#e2e8f0}",
+r26:"&{border:1.6mm double #b45309;outline:.3mm solid #b45309;outline-offset:-6mm;font-family:Georgia,'Times New Roman',serif;background:#fffdf5}& .rh{border-bottom-color:#b45309}& .rt b{color:#92400e}& .rx th{background:#92400e}",
+r27:"& .rp{border-radius:50%;width:30mm;height:30mm}& .rsum td:nth-child(2){font-size:16pt;color:var(--a)}",
+r28:"& .rx td.g{background:var(--a);color:#fff;font-weight:700}& .rx td.g span{background:none;color:#fff}",
+r29:"&{font-size:8.5pt;padding:7mm}& .rx td,& .rx th{padding:1mm 2mm}& .rh{padding-bottom:2mm}& .rs{margin:3mm 0}& .rp{width:22mm;height:27mm}& .rrm{margin-top:2mm}",
+r30:"&{background:#111827;color:#e5e7eb}& .rh{border-color:var(--a)}& .rt small,& .ri i{color:#9ca3af}& .rt b{color:var(--a)}& .rx th{background:var(--a);color:#fff}& .rx td,& .rx th,& .rsum td,& .rsum th{border-color:#374151}& .rx td{color:#e5e7eb}& .rsum th{background:#1f2937;color:#9ca3af}& .rsum td{background:#111827;color:#fff}& .rrm{border-color:#374151}& .rsg span{border-top-color:#6b7280;color:#d1d5db}& .rf{color:#6b7280}& .rp{border-color:#374151}"
+};
+const RSBASE=`.rc{box-sizing:border-box;position:relative;display:flex;flex-direction:column;width:190mm;min-height:270mm;margin:0 auto;padding:10mm;background:#fff;color:#111;font:10pt/1.35 system-ui,Arial,sans-serif;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;--a:#0f766e}
+.rc *{box-sizing:border-box}
+.rc .rh{display:flex;align-items:center;gap:5mm;padding-bottom:4mm;border-bottom:.6mm solid var(--a)}
+.rc img.lg{width:20mm;height:20mm;object-fit:contain;flex:none}
+.rc .rt{flex:1;text-align:center}
+.rc .rt b{display:block;font-size:16pt;color:var(--a)}
+.rc .rt span{display:block;font-weight:700;font-size:12pt;margin-top:1mm}
+.rc .rt small{color:#475569}
+.rc .rs{display:flex;gap:5mm;margin:5mm 0}
+.rc .rp{width:28mm;height:34mm;flex:none;border:.3mm solid #94a3b8;display:grid;place-items:center;overflow:hidden;font-size:22pt;font-weight:700;color:var(--a)}
+.rc .rp img{width:100%;height:100%;object-fit:cover}
+.rc .ri{flex:1;display:grid;grid-template-columns:auto 1fr;gap:1.2mm 4mm;align-content:start}
+.rc .ri i{font-style:normal;color:#64748b}
+.rc .ri b{font-weight:700}
+.rc table{width:100%;border-collapse:collapse}
+.rc .rx th,.rc .rx td,.rc .rsum th,.rc .rsum td{padding:2mm 2.5mm;border:.25mm solid #94a3b8;text-align:left}
+.rc .rx th{background:var(--a);color:#fff}
+.rc .n{text-align:center!important}
+.rc .rx td.g span{font-weight:700}
+.rc .rsum{margin-top:4mm}
+.rc .rsum th{background:#f1f5f9;color:#334155;font-size:8.5pt;font-weight:600}
+.rc .rsum td{font-weight:700;font-size:11pt;text-align:center}
+.rc .rsum th{text-align:center}
+.rc .rrm{margin-top:4mm;border:.25mm solid #cbd5e1;padding:2.5mm 3mm;border-radius:1.5mm}
+.rc .rsg{display:flex;justify-content:space-between;gap:6mm;margin-top:16mm}
+.rc .rsg span{flex:1;border-top:.3mm solid #111;padding-top:1mm;text-align:center;font-size:9pt}
+.rc .rf{margin-top:auto;padding-top:4mm;text-align:center;font-size:8pt;color:#64748b}
+.sheet{display:grid;grid-template-columns:1fr 1fr;gap:4mm;align-items:start}
+.sheet .cell{break-inside:avoid}
+.sheet .rc{zoom:.45;margin:0;min-height:0}
+.sheet .lb{font:600 11px system-ui;color:#334155;margin:0 0 2px}
+.rcp{break-after:page;page-break-after:always}
+.rcp:last-child{break-after:auto;page-break-after:auto}`;
+const RSALL=RSDES.map(([id])=>RSCSS[id].replace(/&/g,".rc."+id)).join("");
+const RSZOOM=`<script>function z(){var r=document.querySelector('.rc');if(r)document.body.style.zoom=Math.min(1,(innerWidth-12)/r.offsetWidth)}z();addEventListener('resize',z)<\/script>`;
+const RSDEF={design:"r1",title:"Result Card",exam:"Annual Examination",color:"#0f766e",sign1:"Class Teacher",sign2:"Principal",sign3:"Parent",footer:"This is a computer-generated result card. For any query, contact the school office.",rA:"Excellent work. Keep it up.",rB:"Good progress. Keep practising.",rC:"Passing, but needs more effort in weaker subjects.",rF:"Below the pass mark. Please meet the class teacher.",showLogo:true,showPhoto:true,showFather:true,showRoll:true,showAtt:true,showGrade:true,showPos:true,showRemark:true,showSign:true,showFoot:true};
+const RSTOG=[["showLogo","School logo"],["showPhoto","Student photo"],["showFather","Father's name"],["showRoll","Roll number"],["showAtt","Attendance %"],["showGrade","Grade letter for each subject"],["showPos","Class position"],["showRemark","Remark"],["showSign","Signature lines"],["showFoot","Footer note"]];
+const RSD=()=>Object.assign({},RSDEF,S.rcard||{});
+const rsCol=c=>/^#[0-9a-f]{6}$/i.test(c||"")?c:"#0f766e";
+window.rsSet=(k,v)=>{if(!isAd())return;S.rcard=Object.assign(RSD(),{[k]:v});commit()};
+const rsOwn=k=>isAd()||(!!me&&(me.subs||[]).includes(k));
+let rsC="all",rsSc="all",rsSel={},rsSub="",rsMemo=null;
+const rsList=()=>S.students.filter(s=>(rsC==="all"||s.cls==rsC)&&(rsSc==="all"||(s.sec||"A")===rsSc)&&(!me||me.role!=="t"||inMy(s.id))).sort((a,b)=>a.cls-b.cls||(a.sec||"A").localeCompare(b.sec||"A")||(+a.roll||0)-(+b.roll||0));
+const rsHasMarks=s=>SB(s.cls).some(k=>!none(G(s)[k]));
+const rsClassAv=c=>{if(!rsMemo)rsMemo={};if(!rsMemo[c])rsMemo[c]=S.students.filter(x=>x.cls==c).map(x=>avg(x)).filter(v=>v!=="-");return rsMemo[c]};
+const rsData=s=>{const g=G(s),subs=SB(s.cls).map(k=>({k,v:g[k]})),ent=subs.filter(x=>!none(x.v)),tot=ent.reduce((a,x)=>a+(+x.v),0),mx=ent.length*100,pct=mx?Math.round(tot/mx*1000)/10:null,av=avg(s),arr=rsClassAv(s.cls),rk=av==="-"?null:1+arr.filter(v=>v>av).length;return{subs,tot,mx,pct,av,rk,of:arr.length}};
+const rsSample=()=>rsList().find(s=>rsSel[s.id])||rsList().find(s=>rsHasMarks(s))||{id:"_sample",name:"Student Name",father:"Father Name",cls:5,sec:"A",roll:"1",att:{},tg:{[S.settings.term]:Object.fromEntries(SB(5).map((k,i)=>[k,62+((i*13)%34)]))}};
+function rsCardHTML(s,dsg){const o=RSD(),st=S.settings,D=rsData(s),has=D.av!=="-",pass=has&&D.av>=st.pass,res=!has?"PENDING":pass?"PASS":"FAIL",rmk=!has?"":D.av>=80?o.rA:D.av>=60?o.rB:pass?o.rC:o.rF,p=PH["s_"+s.id],
+ info=[["Name",s.name,1],["Father",s.father||"-",o.showFather],["Class",s.cls+(s.sec?"-"+s.sec:""),1],["Roll no",s.roll||"-",o.showRoll],["Attendance",rate(s),o.showAtt]].filter(x=>x[2]);
+ return `<div class="rc ${dsg||o.design}" style="--a:${rsCol(o.color)}" data-w="${esc(st.school||"")}">
+<div class="rh">${o.showLogo&&PH.logo?`<img class="lg" src="${esc(PH.logo)}" alt="">`:""}<div class="rt"><b>${esc(st.school||"")}</b><span>${esc(o.title)}</span><small>${esc(o.exam)} · ${esc(st.term)} · ${esc(st.year)}</small></div></div>
+<div class="rs">${o.showPhoto?`<div class="rp">${p?`<img src="${esc(p)}" alt="">`:esc((s.name||"?").trim()[0]||"?")}</div>`:""}<div class="ri">${info.map(x=>`<i>${x[0]}</i><b>${esc(x[1])}</b>`).join("")}</div></div>
+<table class="rx"><thead><tr><th>Subject</th><th class="n">Marks</th><th class="n">Out of</th>${o.showGrade?'<th class="n">Grade</th>':""}</tr></thead><tbody>${D.subs.map(x=>`<tr><td>${esc(x.k)}</td><td class="n">${none(x.v)?"-":esc(x.v)}</td><td class="n">100</td>${o.showGrade?`<td class="n g"><span>${none(x.v)?"-":L(x.v)}</span></td>`:""}</tr>`).join("")}</tbody></table>
+<table class="rsum"><tr><th>Total</th><th>Percentage</th><th>Average grade</th><th>Result</th>${o.showPos?"<th>Class position</th>":""}</tr><tr><td>${D.tot} / ${D.mx}</td><td>${D.pct===null?"-":D.pct+"%"}</td><td>${has?L(D.av):"-"}</td><td style="${has&&!pass?"color:#b91c1c":""}">${res}</td>${o.showPos?`<td>${D.rk?D.rk+" of "+D.of:"-"}</td>`:""}</tr></table>
+${o.showRemark&&rmk?`<div class="rrm"><b>Remark:</b> ${esc(rmk)}</div>`:""}
+${o.showSign?`<div class="rsg"><span>${esc(o.sign1)}</span><span>${esc(o.sign2)}</span><span>${esc(o.sign3)}</span></div>`:""}
+${o.showFoot&&o.footer?`<div class="rf">${esc(o.footer)}</div>`:""}
+</div>`}
+const rsDoc=(body,title,pv)=>`<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>@page{size:A4;margin:10mm}html,body{margin:0;background:#fff}.np{padding:8px;text-align:center}.np button{padding:10px 18px;font-size:15px}@media print{.np{display:none}}${RSBASE}${RSALL}</style><body>${pv?"":'<div class="np"><button onclick="print()">🖨️ Print / Save as PDF</button></div>'}${body}${pv?RSZOOM:""}`;
+const rsTxt=(k,l,v)=>`<label class="stat">${l}</label><input value="${esc(v)}" aria-label="${esc(l)}" onchange="rsSet('${k}',this.value)" style="margin:2px 0 8px">`;
+function rsDesignHTML(){const o=RSD(),sm=rsSample();return `<details class="card" open><summary class="name" style="cursor:pointer">🧾 Result card layout (30 designs)</summary>
+<label class="stat">Choose a layout</label><select aria-label="Result card layout" onchange="rsSet('design',this.value)" style="margin:2px 0 8px">${RSDES.map((d,i)=>`<option value="${d[0]}" ${o.design===d[0]?"selected":""}>${i+1}. ${esc(d[1])}</option>`).join("")}</select>
+<iframe class="rsprev" title="Result card preview" style="width:100%;height:560px;border:1px solid var(--line);border-radius:12px;background:#fff" onload="rsFit(this)" srcdoc="${esc(rsDoc(rsCardHTML(sm),"Preview",1))}"></iframe>
+<div class="row"><span class="stat">Preview: ${esc(sm.name)}</span><span><button class="ghost" onclick="rsAllD(0)">Print all 30</button><button class="ghost" onclick="rsAllD(1)">Download all 30</button></span></div></details>
+<details class="card" open><summary class="name" style="cursor:pointer">✏️ Customise result card (school admin)</summary>
+${rsTxt("title","Card heading",o.title)}${rsTxt("exam","Exam name (e.g. Annual Examination 2026)",o.exam)}
+<label class="stat">Accent colour</label><input type="color" value="${rsCol(o.color)}" aria-label="Accent colour" onchange="rsSet('color',this.value)" style="padding:4px;margin:2px 0 8px">
+${rsTxt("sign1","Signature 1",o.sign1)}${rsTxt("sign2","Signature 2",o.sign2)}${rsTxt("sign3","Signature 3",o.sign3)}
+${rsTxt("footer","Footer note",o.footer)}
+${rsTxt("rA","Remark for 80% and above",o.rA)}${rsTxt("rB","Remark for 60% to 79%",o.rB)}${rsTxt("rC","Remark for pass below 60%",o.rC)}${rsTxt("rF","Remark for fail",o.rF)}
+<div class="stat" style="margin:6px 0 2px">Show on the card</div>
+${RSTOG.map(([k,l])=>`<label class="stat" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" style="width:22px;min-height:22px" ${o[k]?"checked":""} onchange="rsSet('${k}',this.checked)">${l}</label>`).join("")}
+</details>`}
+function rsMarksHTML(LST){const subs=rsC==="all"?[]:SB(+rsC).filter(rsOwn);if(subs.length&&!subs.includes(rsSub))rsSub=subs[0];let b;
+ if(rsC==="all")b='<div class="stat">Choose a class above to enter marks.</div>';
+ else if(!subs.length)b='<div class="stat">No subject is assigned to you for this class. Ask the school admin to assign your subjects in Teachers.</div>';
+ else b=`<div class="add"><select aria-label="Subject" onchange="rsSubSet(this.value)">${subs.map(k=>`<option ${k===rsSub?"selected":""}>${esc(k)}</option>`).join("")}</select></div><div id="rsok" class="stat" style="margin:6px 0" role="status"></div>${LST.map(s=>`<div class="grid"><label for="rm${s.id}" style="align-self:center">${esc(s.name)} · Roll ${esc(s.roll||"-")}</label><input id="rm${s.id}" type="number" min="0" max="100" inputmode="numeric" value="${G(s)[rsSub]??""}" onchange="rsMark('${s.id}',this.value)"></div>`).join("")||'<div class="stat">No student in this class and section.</div>'}`;
+ return `<div class="card"><div class="name">✎ Enter marks (out of 100)</div><p class="stat">Term: ${esc(S.settings.term)}. Teachers can enter marks only for their own subject${isAd()?"s (admin can enter all subjects)":""}.</p>${b}</div>`}
+function rsPrintHTML(LST,cl){const n=LST.filter(s=>rsSel[s.id]).length;return `<div class="card"><div class="name">🖨️ Print or download result cards</div><p class="stat">One card per page. Choose a class and section, tick students, then print. Select all prints a whole section at once.</p>
+<div class="add"><select aria-label="Class" onchange="rsFlt('c',this.value)"><option value="all">All classes</option>${cl.map(c=>`<option value="${c}" ${String(c)===String(rsC)?"selected":""}>Class ${c}</option>`).join("")}</select><select aria-label="Section" onchange="rsFlt('s',this.value)"><option value="all">All sections</option>${SECS.map(x=>`<option ${x===rsSc?"selected":""}>${x}</option>`).join("")}</select></div>
+<div class="row" style="margin:8px 0"><b><span id="rsn">${n}</span> / ${LST.length} selected</b><span><button class="ghost" onclick="rsAll(1)">Select all</button><button class="ghost" onclick="rsAll(0)">Clear</button></span></div>
+${LST.map(s=>`<div class="card" style="padding:10px"><label class="stu" style="cursor:pointer"><input type="checkbox" style="width:22px;min-height:22px" ${rsSel[s.id]?"checked":""} onchange="rsTog('${s.id}',this.checked)">${av(s)}<span><span class="name">${esc(s.name)}</span><br><span class="stat">Class ${s.cls}-${esc(s.sec||"A")} · Roll ${esc(s.roll||"-")} · ${rsHasMarks(s)?"Marks entered":"No marks yet"}</span></span></label></div>`).join("")||'<div class="card stat">No student found.</div>'}
+<div class="add" style="position:sticky;bottom:90px"><button class="btn" style="flex:1" onclick="rsPrint(0)">🖨️ Print selected</button><button class="btn" style="flex:1" onclick="rsPrint(1)">⬇ Download</button></div></div>`}
+V.rsc=function(){$("sub").textContent="Result cards";const adm=isAd(),gr=can("gr");
+ if(!adm&&!gr)return '<div class="card">Result cards are not enabled for your account. Ask the school admin.</div>';
+ rsMemo=null;const cl=[...new Set(S.students.map(s=>s.cls))].sort((a,b)=>a-b),LST=rsList();
+ return `${adm?rsDesignHTML():""}${gr?rsMarksHTML(LST):""}${rsPrintHTML(LST,cl)}`};
+window.rsMark=(id,v)=>{const s=stu(id);if(!s||!can("gr")||!rsSub||!rsOwn(rsSub)||!SB(s.cls).includes(rsSub))return;G(s)[rsSub]=v===""?"":Math.max(0,Math.min(100,+v));commit(false);const e=$("rsok");if(e)e.textContent="Saved "+rsSub+" for "+s.name+"."};
+window.rsSubSet=v=>{rsSub=v;render()};
+window.rsFlt=(k,v)=>{if(k==="c")rsC=v;else rsSc=v;rsSel={};render()};
+window.rsTog=(id,on)=>{if(on)rsSel[id]=1;else delete rsSel[id];const n=$("rsn");if(n)n.textContent=Object.keys(rsSel).length};
+window.rsAll=on=>{rsSel={};if(on)rsList().forEach(s=>rsSel[s.id]=1);render()};
+window.rsFit=el=>{try{const r=el.contentDocument.querySelector(".rc");el.style.height=(r?r.getBoundingClientRect().height+16:300)+"px"}catch(e){}};
+window.rsPrint=dm=>{const LST=rsList().filter(s=>rsSel[s.id]);if(!LST.length){alert("First select at least one student.");return}rsMemo=null;const h=rsDoc(LST.map(s=>`<div class="rcp">${rsCardHTML(s)}</div>`).join(""),"Result cards");dm?dl("result-cards.html",h):openDoc(h,true)};
+window.rsAllD=dm=>{if(!isAd())return;rsMemo=null;const s=rsSample(),h=rsDoc(`<div class="sheet">${RSDES.map((d,i)=>`<div class="cell"><div class="lb">${i+1}. ${esc(d[1])}</div>${rsCardHTML(s,d[0])}</div>`).join("")}</div>`,"Result card designs");dm?dl("result-card-designs.html",h):openDoc(h,true)};
+window.rsDev={filter:(c,s)=>{rsC=c;rsSc=s},sel:ids=>{rsSel={};ids.forEach(i=>rsSel[i]=1)},card:(s,d)=>rsCardHTML(s,d),list:()=>rsList(),setSub:v=>{rsSub=v}};
+const a0=window.adminTabs;window.adminTabs=function(){const r=a0.apply(this,arguments);if(!r[tab]&&NEW6[tab])r[tab]=NEW6[tab];return r};
+const m0=V.more;V.more=function(){const x=m0.apply(this,arguments);if(!isAd())return x;const mine=Object.keys(NEW6).filter(k=>!x.includes("tab='"+k+"'")).map(k=>`<button onclick="tab='${k}';render()"><span>${IC[k]}</span>${NEW6[k]}</button>`).join("");return x.replace(/<button onclick="logout\(\)">/,mine+"$&")};
 })();
 </script>
 </body>
