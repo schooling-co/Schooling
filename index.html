@@ -427,15 +427,15 @@ async function push(){if(!fbU||!fbdb||!dirty&&lastCloud)return;const u=fbU.uid,s
  const day=dayOf();if(lastCloud&&lsGet("cbsnap@"+u)!==day){const sm=(a,id)=>fbdb.collection("schools").doc(a).collection("snap").doc(day+"_"+id);await writeSet((a,id)=>sm(a,id),lastCloud,u);try{localStorage.setItem("cbsnap@"+u,day)}catch(e){}
   const q=await fbdb.collection("schools").doc(u).collection("snap").get(),old=[...new Set(q.docs.map(d=>d.id.split("_")[0]))].sort().slice(0,-7);for(const d of q.docs)if(old.includes(d.id.split("_")[0]))d.ref.delete()}
  const n=await writeSet((a,id)=>cdoc(a,id),str,u);for(let i=n;i<lastN;i++)cdoc(u,"c"+i).delete().catch(()=>{});lastN=n;lastCloud=str;dirty=false;cstat("☁ Backed up "+new Date().toTimeString().slice(0,5))}catch(e){dirty=true;cstat("⚠ Backup pending (internet?)")}}
-function pushSoon(){if(!fbU)return;dirty=true;clearTimeout(pushT);pushT=setTimeout(push,4000)}
+function pushSoon(){if(!fbU)return;dirty=true;clearTimeout(pushT);pushT=setTimeout(push,4000);if(window.pubSoon)pubSoon()}
 function freshS(){S=norm(JSON.parse(JSON.stringify(DEF)));PH={}}
-function saveLocal(){try{localStorage.setItem("cb2",JSON.stringify(S));localStorage.setItem("cbph",JSON.stringify(PH))}catch(e){}}
-async function onUser(u){fbU=u;if(isOwner()){if(!window._supFresh){gTab="sup";await fbAuth.signOut();setTimeout(()=>gate(PG==="super"?"Super admin: enter the email and password again.":"For super admin, open the super admin link."),0);return}freshS();setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";hideGate();render();cstat("👑 Super admin: "+acctShow(u.email));return}if(PG==="super"){fbU=null;try{await fbAuth.signOut()}catch(e){}gate("");return}await licLoad(u);const id=u.uid,prev=lsGet("cbuid");let cloud=null,net=true;
+function saveLocal(){if(window.RO)return;try{localStorage.setItem("cb2",JSON.stringify(S));localStorage.setItem("cbph",JSON.stringify(PH))}catch(e){}}
+async function onUser(u){if(u&&u.isAnonymous)return;fbU=u;if(isOwner()){if(!window._supFresh){gTab="sup";await fbAuth.signOut();setTimeout(()=>gate(PG==="super"?"Super admin: enter the email and password again.":"For super admin, open the super admin link."),0);return}freshS();setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";hideGate();render();cstat("👑 Super admin: "+acctShow(u.email));return}if(PG==="super"){fbU=null;try{await fbAuth.signOut()}catch(e){}gate("");return}await licLoad(u);const id=u.uid,prev=lsGet("cbuid");let cloud=null,net=true;
  try{const r=await readSet((a,x)=>cdoc(a,x),id,"");if(r){cloud=JSON.parse(r.str);lastCloud=r.str;lastN=Math.ceil(r.str.length/CH)}}catch(e){net=false}
  let loc=null;if(prev===id)loc={S,PH,u:S.__u||0};else{try{if(prev){localStorage.setItem("cb2@"+prev,cpl())}const r=lsGet("cb2@"+id);if(r)loc=JSON.parse(r);else if(!lsGet("cbhad"))loc={S,PH,u:S.__u||1}}catch(e){}}
  if(cloud&&(!loc||(cloud.u||0)>(loc.u||0))){S=norm(cloud.S);PH=cloud.PH||{}}else if(loc){S=norm(loc.S);PH=loc.PH||{};if(net)dirty=true}else{freshS();dirty=true}
- try{localStorage.setItem("cbuid",id);localStorage.setItem("cbhad","1")}catch(e){}saveLocal();if(!licOK()){paywall();cstat("A plan is required");return}hideGate();if(isOwner()){setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";render();cstat("👑 Super admin: "+acctShow(u.email))}else{me=null;render();cstat(net?"☁ Account: "+acctShow(u.email):"⚠ Offline: kaam local save hota rahega")}if(net&&dirty){lastCloud=lastCloud;push()}}
-function gate(msg){let g=$("gate");if(!g){g=document.createElement("div");g.id="gate";g.style.cssText="position:fixed;inset:0;z-index:200;background:var(--bg,#fff);color:var(--ink,#111);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto";document.body.appendChild(g)}
+ try{localStorage.setItem("cbuid",id);localStorage.setItem("cbhad","1")}catch(e){}saveLocal();if(!licOK()){paywall();cstat("A plan is required");return}hideGate();if(isOwner()){setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";render();cstat("👑 Super admin: "+acctShow(u.email))}else{if(PG==="school"){me={role:"t",admin:true};link("a");cls=1;tab="hm";away=false}else me=null;render();cstat(net?"☁ Account: "+acctShow(u.email):"⚠ Offline: kaam local save hota rahega")}if(net&&dirty){lastCloud=lastCloud;push()}if(window.pubSoon)pubSoon();if(window.pullReq)setTimeout(pullReq,3000);if(window.pullWrites)setTimeout(window.pullWrites,4000)}
+function gate(msg){if(PG==="teacher"||PG==="parent"){if(!S.settings)S=norm(JSON.parse(JSON.stringify(DEF)));hideGate();if(!me)render();return}let g=$("gate");if(!g){g=document.createElement("div");g.id="gate";g.style.cssText="position:fixed;inset:0;z-index:200;background:var(--bg,#fff);color:var(--ink,#111);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto";document.body.appendChild(g)}
  g.innerHTML=`<div style="max-width:380px;width:100%"><div style="display:flex;gap:6px;margin-bottom:10px"></div>${PG==="super"?superBox(msg):`<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">🏫 ${esc((S.settings||{}).school||"Schooling")}</div><p class="stat">Sign in to the school account. Your full data is backed up in this account and can be restored on any phone.</p><input id="ge" type="text" inputmode="email" placeholder="School email ya mobile number" autocomplete="username" style="margin:6px 0"><input id="gp" type="password" placeholder="Password (at least 6)" autocomplete="current-password" style="margin:6px 0"><button class="btn" style="width:100%;margin:6px 0" onclick="gAuth(0)">Login</button><p class="stat" style="text-align:center">Logins are created by the admin only. Contact the admin for a new login.</p>${FBCFG?"":`<button class="ghost" style="width:100%;margin-top:6px" onclick="localStorage.removeItem('cbfbcfg');location.reload()">🔧 Testing: bina cloud ke kholein (admin / 1234)</button>`}<p class="err" id="gm" role="alert">${msg||""}</p></div>`}</div></div>`}
 const PG=(new URLSearchParams(location.search).get("p")||"school").toLowerCase();
 let gTab="sch";function gTabSet(k){gTab=k;gate("")}
@@ -661,7 +661,7 @@ const waNum=p=>{let d=String(p).replace(/\D/g,"");if(d.startsWith("00"))d=d.slic
 const smsUrl=(s,d)=>window.smsHref(s.phone,absText(s,d));
 const waUrl=(s,d)=>"https://wa.me/"+waNum(s.phone)+"?text="+encodeURIComponent(absText(s,d));
 const isDue=(s,d)=>{const at=S.absAt[d+"|"+s.id];return !!at&&Date.now()-at>=S.settings.autoDelay*60000};
-function refreshDue(){const b=$("due");if(!b)return;const dl=S.settings.autoDelay;if(!me||!can("att")||!(dl>0)){b.hidden=true;return}const d=today,n=unsent(MY().filter(s=>s.att[d]==="A"&&isDue(s,d)),d).length;if(!n){b.hidden=true;return}b.hidden=false;b.innerHTML=`<span>⏰ ${n} absent student${n>1?"s":""}: ${n>1?"fathers are":"father is"} waiting for the absence message</span><button onclick="nextSend()">Send next</button>`}
+function refreshDue(){const b=$("due");if(!b)return;const dl=(S.settings||{}).autoDelay;if(!me||!can("att")||!(dl>0)){b.hidden=true;return}const d=today,n=unsent(MY().filter(s=>s.att[d]==="A"&&isDue(s,d)),d).length;if(!n){b.hidden=true;return}b.hidden=false;b.innerHTML=`<span>⏰ ${n} absent student${n>1?"s":""}: ${n>1?"fathers are":"father is"} waiting for the absence message</span><button onclick="nextSend()">Send next</button>`}
 function dueTag(s,d){const at=S.absAt[d+"|"+s.id],dl=S.settings.autoDelay;if(!dl||!at)return '<span class="tag">Not sent yet</span>';const left=Math.ceil((at+dl*60000-Date.now())/60000);return left<=0?'<span class="tag bad">Due now</span>':`<span class="tag">Due in ${left} min</span>`}
 const unsent=(l,d)=>l.filter(s=>s.phone&&!S.sent[d+"|"+s.id]);
 function markSent(id,d){if(!can("att"))return;S.sent[d+"|"+id]=Date.now();commit(false);setTimeout(render,500)}
@@ -724,7 +724,7 @@ function saveSet(){if(!isAd())return;const st=S.settings,s1=pl("s_sub1"),s2=pl("
 function promote(){if(!isAd())return;if(pend!=="promo"){pend="promo";render();return}pend=null;S.students.forEach(s=>{if(s.cls<10)s.cls++});commit()}
 
 function stamp(){let b=$("svd");if(!b){b=document.createElement("div");b.id="svd";b.setAttribute("role","status");b.style.cssText="position:fixed;top:6px;right:8px;font-size:.7rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:2px 8px;z-index:40;opacity:.85";document.body.appendChild(b)}try{localStorage.setItem("cb2bak",JSON.stringify(S));b.textContent="✓ Saved "+new Date().toTimeString().slice(0,5)}catch(e){b.textContent="⚠ Storage full: download a backup"}}
-function commit(re=true){normUsers(S);autoCharge();S.__u=Date.now();stamp();pushSoon();
+function commit(re=true){if(window.RO){if(window.roCommit&&window.roCommit(re))return;if(window._roSrc)S=window.roBuild();if(window.toast)toast("Read-only on this phone for now. Attendance and marks entry comes in the next update.");if(re)render();return}normUsers(S);autoCharge();S.__u=Date.now();stamp();pushSoon();
  if(ref){ref.set(S).catch(()=>{})}else{try{localStorage.setItem("cb2",JSON.stringify(S))}catch(e){}}
  if(re)render();
 }
@@ -732,7 +732,7 @@ async function init(){norm(S);try{PH=JSON.parse(localStorage.getItem("cbph")||"{
  try{const r=localStorage.getItem("cb2");if(r)S=norm(JSON.parse(r))}catch(e){}
  try{
   const db=null;
-  if(db){ref=db.doc("school/main");shared=true;pcol=db.collection("photos");pcol.onSnapshot(qs=>{PH={};qs.docs.forEach(d=>{const v=d.data();if(v&&v.d)PH[d.id]=v.d});render()},()=>{});
+  if(db){ref=db.doc("school/main");shared=true;pcol=db.collection("photos");pcol.onSnapshot(qs=>{PH={};qs.docs.forEach(d=>{const v=d.data();if(v&&v.d)PH[d.id]=v.d});if(window.pubSoon)pubSoon();render()},()=>{});
    ref.onSnapshot(snap=>{if(snap.exists){S=norm(JSON.parse(JSON.stringify(snap.data())));autoLogin();render()}else{ref.set(S).catch(()=>{});autoLogin();render()}},()=>{})}
  }catch(e){}
  render();
@@ -2159,7 +2159,7 @@ const LKW=(key,fnName,errId)=>{
  const orig=window[fnName];if(typeof orig!=="function")return;
  window[fnName]=function(){const st=rd(),now=Date.now(),e=document.getElementById(errId)||document.getElementById("err");
   if(st.until&&st.until>now){if(e)e.textContent="Too many wrong attempts. "+Math.ceil((st.until-now)/60000)+" minutes later, try again.";return}
-  const before=window.me;orig.apply(this,arguments);
+  const before=window.me;orig.apply(this,arguments);if(window._async)return;
   if(window.me&&window.me!==before){wr({});return}
   const lv=st.lv||0,need=lv===0?10:5,n=(st.n||0)+1;
   if(n>=need){const mins=5*Math.pow(2,lv);wr({n:0,lv:lv+1,until:Date.now()+mins*60000});if(e)e.textContent=need+" wrong attempts. "+mins+" minute ke liye lock.";}
@@ -2191,9 +2191,9 @@ function codeIn(e){const c=cc(($("lp")||{}).value);
   if(!k){e.textContent="Wrong code.";return}
   me={role:"p",sid:k.id,sids:[k.id]};link("p",k.id);const ac=vid&&S.accounts[vid];if(ac&&ac.sids)me.sids=ac.sids;tab="me"}
  away=false;render()}
-window.signin=function(){const e=$("err");if(!e)return;
+window.signin=function(){const e=$("err");if(!e)return;if(pgRole()!=="adm")return phoneIn(e);
  if(!S.settings.pinLogin&&!isOwn){e.textContent="Sign-in is turned off. Ask the admin.";return}
- if(pgRole()==="adm")adminIn(e);else codeIn(e);
+ adminIn(e);
  billTick()};
 })();
 LKW("cb_lk","signin","err");
@@ -2600,6 +2600,373 @@ window.rsAllD=dm=>{if(!isAd())return;rsMemo=null;const s=rsSample(),h=rsDoc(`<di
 window.rsDev={filter:(c,s)=>{rsC=c;rsSc=s},sel:ids=>{rsSel={};ids.forEach(i=>rsSel[i]=1)},card:(s,d)=>rsCardHTML(s,d),list:()=>rsList(),setSub:v=>{rsSub=v}};
 const a0=window.adminTabs;window.adminTabs=function(){const r=a0.apply(this,arguments);if(!r[tab]&&NEW6[tab])r[tab]=NEW6[tab];return r};
 const m0=V.more;V.more=function(){const x=m0.apply(this,arguments);if(!isAd())return x;const mine=Object.keys(NEW6).filter(k=>!x.includes("tab='"+k+"'")).map(k=>`<button onclick="tab='${k}';render()"><span>${IC[k]}</span>${NEW6[k]}</button>`).join("");return x.replace(/<button onclick="logout\(\)">/,mine+"$&")};
+})();
+(function(){
+/* ===== PHONE LOGIN: personal code only, typed every time, nothing remembered on the phone.
+   Admin side publishes, per personal code, that person's slice to phonelogin/{code}, and the shared school info to phoneshared/{schoolUid}. ===== */
+const CH2=250000,INLINE_MAX=800000;
+const hsh=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+"."+s.length};
+const clean=s=>{const o=JSON.parse(JSON.stringify(s));delete o.code;delete o.pcode;return o};
+function commonSlice(){const st=Object.assign({},S.settings);delete st.code;const pick=k=>JSON.parse(JSON.stringify(S[k]===undefined?null:S[k]));return {settings:st,exams:pick("exams")||[],notices:pick("notices")||[],quizzes:pick("quizzes")||[],timetable:pick("timetable")||[],papers:pick("papers")||{},half:pick("half")||{},rcard:pick("rcard")||{},adm:pick("adm")||{},guide:pick("guide")||{},guideAdd:pick("guideAdd")||{},sports:pick("sports")||[],logo:PH.logo||null,attv:2}}
+function phOf(ids){const o={};ids.forEach(id=>{const k="s_"+id;if(PH[k])o[k]=PH[k]});return o}
+function personal(role,pid){
+ const saveMe=me;
+ try{
+  if(role==="t"){const t=S.teachers.find(x=>x.id===pid);if(!t||t.off)return null;
+   const m={role:"t",admin:false,classes:t.classes||[],tid:t.id,subs:t.subs||[],secs:t.secs||[],fm:t.fm,fs:t.fs};
+   me=m;
+   const kids=S.students.filter(s=>inMy(s.id)).map(clean),ids=new Set(kids.map(k=>k.id));
+   const tc=clean(t);delete tc.pin;
+   return {me:m,p:{students:kids,teachers:[tc],msgs:(S.msgs||[]).filter(x=>ids.has(x.sid)).map(x=>JSON.parse(JSON.stringify(x))),leaves:(S.leaves||[]).filter(l=>ids.has(l.sid)).map(x=>JSON.parse(JSON.stringify(x)))},ph:phOf(kids.map(k=>k.id))};
+  }
+  const s=stu(pid);if(!s)return null;
+  const m={role:"p",sid:s.id,sids:[s.id]};
+  return {me:m,p:{students:[clean(s)],teachers:[],msgs:(S.msgs||[]).filter(x=>x.sid===s.id).map(x=>JSON.parse(JSON.stringify(x))),leaves:(S.leaves||[]).filter(l=>l.sid===s.id).map(x=>JSON.parse(JSON.stringify(x)))},ph:phOf([s.id])};
+ }finally{me=saveMe}
+}
+async function putPacked(ref,str,extra){const base=Object.assign({ts:Date.now()},extra||{});
+ if(str.length<=INLINE_MAX){await ref.set(Object.assign(base,{n:0,d:str}));return 0}
+ const parts=[];for(let i=0;i<str.length;i+=CH2)parts.push(str.slice(i,i+CH2));
+ await ref.set(Object.assign(base,{n:parts.length}));
+ for(let i=0;i<parts.length;i+=400){const b=fbdb.batch();for(let j=i;j<Math.min(parts.length,i+400);j++)b.set(ref.collection("c").doc(String(j)),{d:parts[j]});await b.commit()}
+ return parts.length}
+async function delChunks(ref,n){for(let i=0;i<(n||0);i++)await ref.collection("c").doc(String(i)).delete().catch(()=>{})}
+async function delPacked(ref,n){await delChunks(ref,n);await ref.delete().catch(()=>{})}
+let pubBusy=false,pubT=null;
+window.pubSoon=function(){if(!fbU||window.RO||isOwner())return;clearTimeout(pubT);pubT=setTimeout(publishLogins,6000)};
+async function publishLogins(){
+ if(pubBusy){clearTimeout(pubT);pubT=setTimeout(publishLogins,3000);return}
+ if(!fbU||!fbdb||window.RO||isOwner())return;
+ pubBusy=true;const uid=fbU.uid,idx=S.logidx=S.logidx||{};let changed=false,ok=0,short=0,clash=0;
+ try{
+  const common=JSON.stringify(commonSlice()),ch=hsh(common);
+  if(idx.__c!==ch){const shRef=fbdb.collection("phoneshared").doc(uid);await delChunks(shRef,idx.__n);idx.__n=await putPacked(shRef,common,null);idx.__c=ch;changed=true}
+  const want={};
+  S.teachers.forEach(t=>{if(!t.off&&t.pin)want["t:"+t.id]={code:String(t.pin),role:"t",pid:t.id}});
+  S.students.forEach(s=>{if(s.code)want["c:"+s.id]={code:String(s.code),role:"p",pid:s.id};if(s.pcode)want["q:"+s.id]={code:String(s.pcode),role:"p",pid:s.id}});
+  const keys=new Set([...Object.keys(want),...Object.keys(idx).filter(k=>!k.startsWith("__"))]);
+  for(const k of keys){
+   const w=want[k],old=idx[k];
+   let pl=null,pub=!!w;
+   if(pub&&w.code.length<8){pub=false;short++}
+   if(pub){pl=personal(w.role,w.pid);if(!pl)pub=false}
+   if(!pub){if(old){await delPacked(fbdb.collection("phonelogin").doc(old.c),old.n);delete idx[k];changed=true}continue}
+   const str=JSON.stringify(pl),h=hsh("v2"+str);
+   if(old&&old.c===w.code&&old.h===h){ok++;continue}
+   if(!old||old.c!==w.code){
+    let taken=false;
+    try{const ex=await fbdb.collection("phonelogin").doc(w.code).get();taken=ex.exists&&ex.data().school!==uid}catch(e){taken=true}
+    if(taken){clash++;if(old){await delPacked(fbdb.collection("phonelogin").doc(old.c),old.n);delete idx[k]}continue}
+   }
+   const ref=fbdb.collection("phonelogin").doc(w.code);
+   if(old&&old.c===w.code)await delChunks(ref,old.n);
+   const ex={school:uid,role:w.role};if(w.role==="t"){ex.tid=w.pid;ex.sids=pl.p.students.map(x=>x.id)}else ex.sid=w.pid;const n=await putPacked(ref,str,ex);
+   if(old&&old.c!==w.code)await delPacked(fbdb.collection("phonelogin").doc(old.c),old.n);
+   idx[k]={c:w.code,h,n};ok++;changed=true;
+  }
+  S.logidx=idx;
+  if(changed){dirty=true;push()}
+  if(short||clash)toast("Phone logins: "+ok+" published. "+short+" code(s) are shorter than 8 characters and will not work on phones. "+clash+" code(s) are already used by another school.");
+ }catch(x){toast("Phone login update failed: "+(x&&x.message||x)+". Check internet and Firestore rules.")}
+ finally{pubBusy=false}
+}
+/* ---- phone side ---- */
+const lkRd=()=>{try{return JSON.parse(localStorage.getItem("cb_lk")||"{}")}catch(x){return{}}};
+const lkWr=o=>{try{localStorage.setItem("cb_lk",JSON.stringify(o))}catch(x){}};
+async function readPacked(ref,info){if(info.d!=null)return info.d;const parts=[];for(let i=0;i<(info.n||0);i++){const x=await ref.collection("c").doc(String(i)).get();parts.push((x.data()||{}).d||"")}return parts.join("")}
+function roBuild(){const r=window._roSrc;const b=norm(Object.assign(JSON.parse(JSON.stringify(DEF)),{students:[],teachers:[],leaves:[],notices:[],msgs:[]},JSON.parse(JSON.stringify(r.common)),JSON.parse(JSON.stringify(r.pack.p))));if(window._roPend){b.msgs=(b.msgs||[]).concat(window._roPend.msgs);b.leaves=(b.leaves||[]).concat(window._roPend.leaves)}return b}
+window.roBuild=roBuild;
+function enterPhone(pack,common){
+ if(!window._roStash)window._roStash={S,PH,me,tab,cls,sec};
+ common.attv=2;const lg=common.logo;delete common.logo;window.RO=true;window._roSrc={pack,common};window._roPend={msgs:[],leaves:[]};
+ S=roBuild();
+ PH=Object.assign({},pack.ph||{});if(lg)PH.logo=lg;window._roSnap=window.snapOf(S);window._roOver={att:{},mk:{}};window._roRetry=[];me=pack.me;cls=(me.classes&&me.classes[0])||1;tab=me.role==="t"?"hm":"me";away=false;
+ render();
+}
+window.enterPhone=enterPhone;
+window.phoneIn=async function(e){
+ const c=String(($("lp")||{}).value||"").trim(),st=lkRd(),now=Date.now();
+ if(st.until&&st.until>now){e.textContent="Too many wrong attempts. "+Math.ceil((st.until-now)/60000)+" minutes later, try again.";return}
+ if(!c){e.textContent="Enter the code the school gave you.";return}
+ e.textContent="Please wait...";window._async=true;
+ let msg="",wrong=false,ok=false,offline=false;
+ try{
+  if(navigator.onLine===false||!await fbBoot()){offline=true}
+  else{
+   try{await fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION)}catch(x){}
+   if(fbAuth.currentUser&&!fbAuth.currentUser.isAnonymous)await fbAuth.signOut();
+   if(!fbAuth.currentUser)await fbAuth.signInAnonymously();
+   const d=await fbdb.collection("phonelogin").doc(c).get();
+   if(!d.exists){wrong=true}
+   else{const info=d.data(),pack=JSON.parse(await readPacked(d.ref,info));
+    const sd=await fbdb.collection("phoneshared").doc(info.school).get();
+    if(!sd.exists){msg="The school has not published its data yet. Ask the admin."}
+    else{const common=JSON.parse(await readPacked(sd.ref,sd.data()));
+     window._roMeta={school:info.school,code:c};
+     if(window.offSave)await offSave(c,info.school,pack,common);
+     enterPhone(pack,common);ok=true}}
+  }
+ }catch(x){offline=true}
+ finally{window._async=false}
+ if(offline&&!ok){
+  const r=window.offIn?await offIn(c):{msg:"Check the internet connection and try again."};
+  if(r.ok)ok=true;else if(r.wrong)wrong=true;else msg=r.msg||"Check the internet connection and try again.";
+ }
+ if(ok){lkWr({});return}
+ if(wrong){const lv=st.lv||0,need=lv===0?10:5,n=(st.n||0)+1;
+  if(n>=need){const mins=5*Math.pow(2,lv);lkWr({n:0,lv:lv+1,until:Date.now()+mins*60000});msg=need+" wrong attempts. Locked for "+mins+" minutes."}
+  else{lkWr({n,lv});msg="Wrong code."}}
+ e.textContent=msg||"Wrong code.";
+};
+
+/* read-only on phones for this update; logout restores what this device had before */
+const logout0=window.logout;
+window.logout=function(){
+ if(!window.RO)return logout0.apply(this,arguments);
+ if(window.offCanLogout&&!offCanLogout())return;const st=window._roStash||{};window.RO=false;window._roStash=null;window._roSrc=null;window._roMeta=null;window._roPend=null;window._roSnap=null;window._roOver=null;window._roRetry=null;if(window.offLogout)offLogout();
+ S=st.S||norm(JSON.parse(JSON.stringify(DEF)));PH=st.PH||{};me=null;away=true;
+ try{if(fbAuth&&fbAuth.currentUser&&fbAuth.currentUser.isAnonymous)fbAuth.signOut()}catch(x){}
+ render();
+};
+})();
+(function(){
+/* ===== PARENT REQUESTS: messages and leave requests from phones go to phonereq/{school}/items; the school phone collects them. ===== */
+const RO_MSG="Read-only on this phone for now. Attendance and marks entry comes in the next update.";
+async function phoneReq(o){
+ const m=window._roMeta;
+ if(!m||!fbdb||!fbAuth||!fbAuth.currentUser){toast("No internet. Try again.");return false}
+ const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+ try{await fbdb.collection("phonereq").doc(m.school).collection("items").doc(id).set(Object.assign({school:m.school,code:m.code,sid:me.sid,ts:Date.now(),text:"",reason:"",date:""},o));toast("Sent to the school.");return true}
+ catch(e){toast("Could not send. Check the internet and try again.");return false}
+}
+const send0=window.send;
+window.send=function(){
+ if(!window.RO)return send0.apply(this,arguments);
+ if(!me||me.role!=="p"){toast(RO_MSG);return}
+ const el=$("mtext"),t=el?el.value.trim():"";if(!t)return;
+ phoneReq({kind:"msg",text:t.slice(0,500)}).then(ok=>{if(ok){window._roPend.msgs.push({sid:me.sid,from:"p",text:t.slice(0,500),ts:Date.now()});render()}});
+};
+const lv0=window.applyLeave;
+window.applyLeave=function(){
+ if(!window.RO)return lv0.apply(this,arguments);
+ if(!me||me.role!=="p"){toast(RO_MSG);return}
+ const d=$("lvdate").value,r=$("lvreason").value.trim();
+ if(!d||!r){(d?$("lvreason"):$("lvdate")).focus();return}
+ phoneReq({kind:"leave",date:d,reason:r.slice(0,300)}).then(ok=>{if(ok){window._roPend.leaves.unshift({id:"p"+Date.now(),sid:me.sid,date:d,reason:r.slice(0,300),status:"pending"});render()}});
+};
+/* school phone: collect requests, add them to Messages and Leaves, then delete the request documents */
+let pulling=false;
+async function pullReq(){
+ if(pulling||!fbU||!fbdb||window.RO||isOwner()||!isAd())return;
+ pulling=true;let n=0;
+ try{
+  const q=await fbdb.collection("phonereq").doc(fbU.uid).collection("items").get();
+  for(const d of q.docs){
+   const x=d.data()||{},s=stu(x.sid);
+   if(!s)continue;
+   if(x.kind==="msg"&&x.text){S.msgs.push({sid:s.id,from:"p",text:String(x.text).slice(0,500),ts:x.ts||Date.now()});n++}
+   else if(x.kind==="leave"&&x.date&&x.reason){S.leaves.unshift({id:d.id,sid:s.id,date:String(x.date),reason:String(x.reason).slice(0,300),status:"pending"});n++}
+  }
+  if(n){try{commit()}catch(e){}}
+  for(const d of q.docs){try{await d.ref.delete()}catch(e){}}
+  if(n)toast(n+" new message(s) or leave request(s) from parents.");
+ }catch(e){}
+ finally{pulling=false}
+}
+window.pullReq=pullReq;
+setInterval(()=>{if(window.pullReq)pullReq()},60000);
+})();
+(function(){
+/* ===== STAGE 2: teacher phones send attendance and marks changes to phonewrite/{school}/items.
+   The school phone checks each one against the teacher's rights and applies the allowed ones.
+   Changes that are not sent yet wait in the queue cb_offq on this phone and are sent when the internet is back. ===== */
+const SEP="\u0001",QKEY="cb_offq",TIMEOUT=15000;
+window.snapOf=function(st){const o={};(st.students||[]).forEach(s=>{o[s.id]={att:JSON.parse(JSON.stringify(s.att||{})),att2:JSON.parse(JSON.stringify(s.att2||{})),tg:JSON.parse(JSON.stringify(s.tg||{}))}});return o};
+/* what changed on this phone since the last snapshot */
+function diffItems(){
+ const snap=window._roSnap||{},out=[],at=Date.now();
+ S.students.forEach(s=>{
+  const o=snap[s.id]||{att:{},att2:{},tg:{}};
+  ["att","att2"].forEach(slot=>{
+   const c=s[slot]||{},p=o[slot]||{};
+   new Set([...Object.keys(c),...Object.keys(p)]).forEach(d=>{const cv=c[d]||"",pv=p[d]||"";if(cv!==pv)out.push({kind:"att",sid:s.id,slot,date:d,value:cv,ts:at})});
+  });
+  const ct=s.tg||{},pt=o.tg||{};
+  new Set([...Object.keys(ct),...Object.keys(pt)]).forEach(term=>{
+   const cm=ct[term]||{},pm=pt[term]||{};
+   new Set([...Object.keys(cm),...Object.keys(pm)]).forEach(subj=>{
+    const cv=cm[subj]==null?"":String(cm[subj]),pv=pm[subj]==null?"":String(pm[subj]);
+    if(cv!==pv)out.push({kind:"mark",sid:s.id,term,subj,value:cv,ts:at});
+   });
+  });
+ });
+ return out;
+}
+/* the same rights the school phone checks: only own class (form master for attendance) and own subjects */
+function allowedItem(it){
+ const s=stu(it.sid);if(!s||!me)return false;
+ if(it.kind==="att")return !!me.fm&&+me.fm===+s.cls&&(!me.fs||me.fs===(s.sec||"A"))&&["att","att2"].includes(it.slot);
+ return (me.subs||[]).includes(it.subj)&&SB(s.cls).includes(it.subj);
+}
+function qLoad(){try{const q=JSON.parse(localStorage.getItem(QKEY)||"[]");return Array.isArray(q)?q:[]}catch(x){return[]}}
+function qSave(list){try{if(list&&list.length)localStorage.setItem(QKEY,JSON.stringify(list));else localStorage.removeItem(QKEY)}catch(x){}}
+/* Firestore can wait a long time with no connection, so a send that takes too long counts as not sent */
+function withTimeout(p){return Promise.race([p,new Promise(r=>setTimeout(()=>r(false),TIMEOUT))]).catch(()=>false)}
+/* sending needs an anonymous Firebase session only (no code), so a queued change can go out after a reload */
+async function ensureFb(){
+ try{
+  if(fbAuth&&fbAuth.currentUser&&fbdb)return true;
+  if(navigator.onLine===false)return false;
+  if(!await fbBoot())return false;
+  try{await fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION)}catch(x){}
+  if(!fbAuth.currentUser)await withTimeout(fbAuth.signInAnonymously());
+  return !!fbAuth.currentUser;
+ }catch(x){return false}
+}
+async function phoneWrite(body){
+ try{
+  if(!await ensureFb())return false;
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  return await withTimeout(fbdb.collection("phonewrite").doc(body.school).collection("items").doc(id).set(body).then(()=>true,()=>false));
+ }catch(e){return false}
+}
+let sending=false;
+/* send everything in the queue; a change leaves the queue only after the school's database accepted it */
+async function sendQueue(quiet){
+ const q=qLoad();
+ if(!q.length||sending)return;
+ sending=true;
+ try{
+  const okIds=new Set();
+  await Promise.all(q.map(d=>{const body=Object.assign({},d);delete body.qid;return phoneWrite(body).then(ok=>{if(ok)okIds.add(d.qid)})}));
+  qSave(qLoad().filter(d=>!okIds.has(d.qid)));
+  if(!quiet&&window.toast){
+   if(okIds.size===q.length)toast("Saved. It reaches the school's records within a minute.");
+   else toast("Not sent yet. It is kept on this phone and sent when the internet is back.");
+  }
+ }finally{sending=false}
+}
+function enqueue(docs){
+ const rnd=()=>Math.random().toString(36).slice(2,10);
+ docs.forEach(d=>{d.qid=rnd()});
+ qSave(qLoad().concat(docs));
+ sendQueue(false);
+}
+/* the teacher's own changes stay on screen for the session, on top of the school data from login */
+function applyOver(ov){
+ const by={};S.students.forEach(s=>by[s.id]=s);
+ Object.keys(ov.att).forEach(k=>{const p=k.split(SEP),s=by[p[0]];if(!s)return;const slot=p[1],d=p[2];s[slot]=s[slot]||{};if(ov.att[k])s[slot][d]=ov.att[k];else delete s[slot][d]});
+ Object.keys(ov.mk).forEach(k=>{const p=k.split(SEP),s=by[p[0]];if(!s)return;const g=s.tg=s.tg||{};g[p[1]]=g[p[1]]||{};const v=ov.mk[k];if(v==="")delete g[p[1]][p[2]];else g[p[1]][p[2]]=+v});
+}
+/* called by the app on every save. Teachers: keep their own changes, drop anything else. Returns false for other roles. */
+window.roCommit=function(re){
+ if(!me||me.role!=="t"||!window._roMeta||!window._roSrc)return false;
+ const m=window._roMeta;
+ const all=diffItems(),items=all.filter(allowedItem);
+ if(all.length>items.length&&window.toast)toast("Changes outside your classes and subjects were undone.");
+ const ov=window._roOver=window._roOver||{att:{},mk:{}};
+ items.forEach(it=>{if(it.kind==="att")ov.att[it.sid+SEP+it.slot+SEP+it.date]=it.value;else ov.mk[it.sid+SEP+it.term+SEP+it.subj]=it.value});
+ S=window.roBuild();applyOver(ov);
+ window._roSnap=window.snapOf(S);
+ if(items.length)enqueue(items.map(it=>Object.assign({school:m.school,code:m.code,tid:me.tid},it)));
+ if(window.offSync)offSync();
+ if(re)render();
+ return true;
+};
+/* school phone: check each teacher change, apply the allowed ones, then delete the requests */
+let pullingW=false;
+async function pullWrites(){
+ if(pullingW||!fbU||!fbdb||window.RO||isOwner()||!isAd())return;
+ pullingW=true;let n=0,bad=0;
+ try{
+  const q=await fbdb.collection("phonewrite").doc(fbU.uid).collection("items").get();
+  const docs=q.docs.slice().sort((a,b)=>((a.data()||{}).ts||0)-((b.data()||{}).ts||0));
+  for(const d of docs){
+   const x=d.data()||{},t=S.teachers.find(z=>z.id===x.tid),s=stu(x.sid);
+   let ok=!!(t&&s&&!t.off&&(t.classes||[]).map(Number).includes(+s.cls));
+   if(ok&&x.kind==="att"){
+    ok=!!t.fm&&+t.fm===+s.cls&&(!t.fs||t.fs===(s.sec||"A"))&&["att","att2"].includes(x.slot)&&/^\d{4}-\d{2}-\d{2}$/.test(String(x.date))&&String(x.date)<=today&&["","P","A","L","T"].includes(x.value);
+    if(ok){s[x.slot]=s[x.slot]||{};if(x.value)s[x.slot][x.date]=x.value;else delete s[x.slot][x.date];n++}
+   }else if(ok&&x.kind==="mark"){
+    ok=(t.subs||[]).includes(x.subj)&&SB(s.cls).includes(x.subj)&&typeof x.term==="string"&&x.term.length>0&&x.term.length<=40&&(x.value===""||(!isNaN(+x.value)&&+x.value>=0&&+x.value<=100));
+    if(ok){const g=s.tg=s.tg||{};g[x.term]=g[x.term]||{};if(x.value==="")delete g[x.term][x.subj];else g[x.term][x.subj]=+x.value;n++}
+   }else ok=false;
+   if(!ok)bad++;
+  }
+  if(n){try{commit()}catch(e){}}
+  for(const d of docs){try{await d.ref.delete()}catch(e){}}
+  if(n||bad)toast("Teacher phones: "+n+" change(s) saved"+(bad?", "+bad+" rejected (not allowed).":"."));
+ }catch(e){}
+ finally{pullingW=false}
+}
+window.pullWrites=pullWrites;
+setInterval(()=>{if(window.pullWrites)pullWrites()},60000);
+/* teacher phone: send queued changes at start, every 30 seconds, and when the internet comes back */
+setTimeout(()=>{if(qLoad().length)sendQueue(true)},4000);
+setInterval(()=>{if(qLoad().length)sendQueue(true)},30000);
+window.addEventListener&&window.addEventListener("online",()=>{if(qLoad().length)sendQueue(true)});
+/* read-only phones cannot change photos */
+const setPh0=setPh;
+window.setPh=function(key,d){if(window.RO){if(window.toast)toast("Read-only on this phone for now.");return}return setPh0.apply(this,arguments)};
+})();
+(function(){
+/* ===== OFFLINE COPY: after an online sign-in the phone keeps one copy of its data for 8 hours (cb_off).
+   Only a salted hash of the personal code is stored (PBKDF2), never the code.
+   The copy is removed at logout and when the 8 hours are over. Unsent changes stay in cb_offq. ===== */
+const KEY="cb_off",MS=8*60*60*1000;
+const hex=b=>Array.from(b).map(x=>x.toString(16).padStart(2,"0")).join("");
+const unhex=h=>Uint8Array.from(h.match(/../g).map(x=>parseInt(x,16)));
+async function pbk(code,saltHex){
+ const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(code),"PBKDF2",false,["deriveBits"]);
+ const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:unhex(saltHex),iterations:100000,hash:"SHA-256"},key,256);
+ return hex(new Uint8Array(bits));
+}
+function read(){
+ try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(!o)return null;if(!(o.exp>Date.now())){localStorage.removeItem(KEY);return null}return o}catch(x){return null}
+}
+/* called right after an online sign-in, before the data is changed on screen */
+window.offSave=async function(code,school,pack,common){
+ try{
+  if(!window.crypto||!crypto.subtle)return;
+  const saltB=new Uint8Array(16);crypto.getRandomValues(saltB);
+  const salt=hex(saltB),hash=await pbk(code,salt);
+  localStorage.setItem(KEY,JSON.stringify({exp:Date.now()+MS,school,salt,hash,data:JSON.stringify({pack,common})}));
+ }catch(x){try{localStorage.removeItem(KEY)}catch(y){}}
+};
+/* no internet: check the code against the saved copy and open it read-only-with-queue */
+window.offIn=async function(code){
+ const none={msg:"Check the internet connection. This phone has no saved copy to use offline (it is kept for 8 hours after the last online sign-in)."};
+ const o=read();
+ if(!o||!window.crypto||!crypto.subtle)return none;
+ if(await pbk(code,o.salt)!==o.hash)return{wrong:true};
+ const d=JSON.parse(o.data);
+ window._roMeta={school:o.school,code};
+ window.OFFLINE=true;
+ enterPhone(d.pack,d.common);
+ if(window.toast)toast("No internet: showing the copy saved on this phone. Changes are sent when the internet is back.");
+ return{ok:true};
+};
+/* keep the saved copy in step with the teacher changes made on this phone */
+window.offSync=function(){
+ try{
+  const o=read();if(!o||typeof S==="undefined")return;
+  const d=JSON.parse(o.data),by={};
+  S.students.forEach(s=>by[s.id]=s);
+  (d.pack.p.students||[]).forEach(p=>{const s=by[p.id];if(s){p.att=s.att;p.att2=s.att2;p.tg=s.tg}});
+  o.data=JSON.stringify(d);localStorage.setItem(KEY,JSON.stringify(o));
+ }catch(x){}
+};
+/* logout with unsent changes: warn first; if the teacher agrees, the queued changes (which hold the code) are deleted from this phone */
+window.offCanLogout=function(){
+ let n=0;try{n=JSON.parse(localStorage.getItem("cb_offq")||"[]").length}catch(x){}
+ if(!n)return true;
+ if(!confirm(n+" change(s) are not sent to the school yet. If you log out now they are deleted from this phone. Log out anyway?"))return false;
+ try{localStorage.removeItem("cb_offq")}catch(x){}
+ return true;
+};
+/* logout removes the saved copy */
+window.offLogout=function(){try{localStorage.removeItem(KEY)}catch(x){}};
+setInterval(read,10*60*1000);
 })();
 </script>
 </body>
