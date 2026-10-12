@@ -2,7 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="manifest" href="manifest.webmanifest"><script>(function(){var p=new URLSearchParams(location.search).get("p");if(p!=="teacher"&&p!=="parent")return;var l=document.querySelector('link[rel="manifest"]');if(l)l.href="manifest-"+p+".webmanifest";var m=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(!m){m=document.createElement("meta");m.name="apple-mobile-web-app-title";document.head.appendChild(m)}m.content=p==="teacher"?"Schooling Teacher":"Schooling Parent"})();</script><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){
+ var p=new URLSearchParams(location.search).get("p");
+ var roles={teacher:["Schooling Teacher","Teacher"],parent:["Schooling Parent","Parent"],super:["Schooling Super Admin","Super Admin"]};
+ var r=roles[p];
+ var l=document.createElement("link");l.rel="manifest";
+ if(r){
+  var start=location.origin+location.pathname+"?p="+p;
+  var mf={name:r[0],short_name:r[1],id:start,start_url:start,scope:location.origin+location.pathname.replace(/[^\/]*$/,""),display:"standalone",background_color:"#212124",theme_color:"#6d5efc",
+   icons:[{src:new URL("icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};
+  l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
+  var m=document.createElement("meta");m.name="apple-mobile-web-app-title";m.content=r[0];document.head.appendChild(m);
+ }else{
+  l.href="manifest.webmanifest";
+ }
+ document.head.appendChild(l);
+})();</script><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Schooling</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -3098,6 +3113,17 @@ V.sa=V.sch=function(){return (isOwner()&&isSuper()&&!window.SUPSCHOOL?ownCard():
    'touchmoves '+last.n+' | last target '+last.t+' | last prevented '+last.prev;
  }
  setInterval(show,400);show();
+})();
+</script>
+<script>
+/* school logout goes to the school account sign-in */
+(function(){
+ var lo=window.logout;
+ window.logout=function(){
+  var r=lo.apply(this,arguments);
+  if(PG==='school'&&!me){try{gate('')}catch(e){}}
+  return r;
+ };
 })();
 </script>
 </body>
