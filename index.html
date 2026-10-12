@@ -128,6 +128,11 @@ nav button.on{color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,trans
 body:has(#gate){position:static!important;height:auto!important;overflow:visible!important;touch-action:auto!important;user-select:auto!important;display:block!important}
 html:has(#gate){height:auto;overflow:visible}
 body:has(#gate)>*:not(#gate):not(#supbar){display:none!important}
+html.gateo,html.gateo body{overflow:visible!important;overflow-x:visible!important;height:auto!important;max-height:none!important;overscroll-behavior:auto!important}
+html.gateo{background:var(--bg)}
+body.gateo{position:static!important;inset:auto!important;display:block!important;width:auto!important;touch-action:auto!important;user-select:auto!important;-webkit-user-select:auto!important;overflow:visible!important}
+body.gateo>*:not(#gate):not(#supbar):not(script){display:none!important}
+body.gateo #gate{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;inset:auto!important;height:auto!important;min-height:100vh;min-height:100dvh;overflow:visible!important;touch-action:auto!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;box-sizing:border-box;padding:12px 12px calc(120px + env(safe-area-inset-bottom,0px))!important}
 #gate{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;inset:auto!important;height:auto!important;min-height:100dvh;min-height:100vh;overflow:visible!important;touch-action:auto!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;box-sizing:border-box;padding:12px 12px calc(120px + env(safe-area-inset-bottom,0px))!important}</style>
 </head>
 <body>
@@ -3046,6 +3051,14 @@ function unbarOwn(){const b=document.getElementById("supbar");if(b)b.remove()}
 const ownCard=()=>'<div class="card"><div class="name">⚙ My account</div><p class="stat">Your own account settings, theme, design and templates. Changes are saved to your own account.</p><button class="btn" style="width:100%" onclick="ownOpen()">Open my account settings</button></div>';
 const sv0=V.sa;
 V.sa=V.sch=function(){return (isOwner()&&isSuper()&&!window.SUPSCHOOL?ownCard():"")+sv0.apply(this,arguments)};
+})();
+</script>
+<script>
+/* gate screens: mark html/body while #gate is on the page (plain class, works on every browser) */
+(function(){
+ function sync(){var on=!!document.getElementById('gate');document.documentElement.classList.toggle('gateo',on);document.body.classList.toggle('gateo',on)}
+ new MutationObserver(sync).observe(document.body,{childList:true});
+ sync();
 })();
 </script>
 </body>
