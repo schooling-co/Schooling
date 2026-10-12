@@ -2675,7 +2675,7 @@ async function publishLogins(){
   }
   S.logidx=idx;
   if(changed){dirty=true;push()}
-  if(short||clash)toast("Phone logins: "+ok+" published. "+short+" code(s) are shorter than 8 characters and will not work on phones. "+clash+" code(s) are already used by another school.");
+  if(short||clash){const lm="Phone logins: "+ok+" published. "+short+" code(s) are shorter than 8 characters and will not work on phones. "+clash+" code(s) are already used by another school.";if(window._lkMsg!==lm){window._lkMsg=lm;toast(lm)}}
  }catch(x){toast("Phone login update failed: "+(x&&x.message||x)+". Check internet and Firestore rules.")}
  finally{pubBusy=false}
 }
@@ -3059,6 +3059,19 @@ V.sa=V.sch=function(){return (isOwner()&&isSuper()&&!window.SUPSCHOOL?ownCard():
  function sync(){var on=!!document.getElementById('gate');document.documentElement.classList.toggle('gateo',on);document.body.classList.toggle('gateo',on)}
  new MutationObserver(sync).observe(document.body,{childList:true});
  sync();
+})();
+</script>
+<script>
+/* phone keyboard: while it is open, fit the app to the area above the keyboard so the form and the bottom bar stay on screen */
+(function(){
+ var vv=window.visualViewport; if(!vv)return;
+ function fit(){
+  var b=document.body; if(!b||b.classList.contains('gateo'))return;
+  var open=vv.height<window.innerHeight-80;
+  if(open){b.style.height=Math.round(vv.height)+'px';b.style.top='0px';if(window.scrollY)window.scrollTo(0,0)}
+  else{b.style.height='';b.style.top=''}
+ }
+ vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);
 })();
 </script>
 </body>
