@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest"><script>(function(){var p=new URLSearchParams(location.search).get("p");if(p!=="teacher"&&p!=="parent")return;var l=document.querySelector('link[rel="manifest"]');if(l)l.href="manifest-"+p+".webmanifest";var m=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(!m){m=document.createElement("meta");m.name="apple-mobile-web-app-title";document.head.appendChild(m)}m.content=p==="teacher"?"Schooling Teacher":"Schooling Parent"})();</script><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Schooling</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -3072,6 +3072,32 @@ V.sa=V.sch=function(){return (isOwner()&&isSuper()&&!window.SUPSCHOOL?ownCard():
   else{b.style.height='';b.style.top=''}
  }
  vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);
+})();
+</script>
+<script>
+/* diagnostic: open the site with ?debug=1 to see this phone's real sizes and scroll state */
+(function(){
+ if(!/[?&]debug=1/.test(location.search))return;
+ var d=document.createElement('div');d.id='dbg';
+ d.setAttribute('style','position:fixed;left:0;right:0;top:0;z-index:999999;background:rgba(0,0,0,.78);color:#7CFC00;font:10px/1.35 monospace;padding:4px 6px;pointer-events:none;white-space:pre-wrap;word-break:break-all');
+ document.body.appendChild(d);
+ var last={t:'-',prev:'-',n:0};
+ function desc(el){if(!el)return '-';var s=el.tagName||'';if(el.id)s+='#'+el.id;if(el.className&&typeof el.className==='string')s+='.'+el.className.split(' ')[0];return s}
+ document.addEventListener('touchmove',function(e){last.n++;last.t=desc(e.target)},{passive:true,capture:true});
+ window.addEventListener('touchmove',function(e){last.prev=e.defaultPrevented},{passive:true});
+ function show(){
+  var g=document.getElementById('gate'),a=document.getElementById('app'),vv=window.visualViewport;
+  var cs=getComputedStyle(document.body),hs=getComputedStyle(document.documentElement);
+  d.textContent=
+   'innerH '+innerHeight+' | vvH '+(vv?Math.round(vv.height):'-')+' | vvTop '+(vv?Math.round(vv.offsetTop):'-')+'\n'+
+   'docScrollH '+document.documentElement.scrollHeight+' docScrollY '+Math.round(scrollY)+'\n'+
+   'html: pos '+hs.position+' ov '+hs.overflow+' h '+hs.height+' | cls '+document.documentElement.className+'\n'+
+   'body: pos '+cs.position+' ov '+cs.overflow+' h '+cs.height+' | cls '+document.body.className+'\n'+
+   'gate: '+(g?('scrollH '+g.scrollHeight+' clientH '+g.clientHeight+' ov '+getComputedStyle(g).overflowY+' top '+Math.round(g.getBoundingClientRect().top)):'none')+'\n'+
+   'app: '+(a?('scrollH '+a.scrollHeight+' clientH '+a.clientHeight+' scrollTop '+Math.round(a.scrollTop)):'none')+'\n'+
+   'touchmoves '+last.n+' | last target '+last.t+' | last prevented '+last.prev;
+ }
+ setInterval(show,400);show();
 })();
 </script>
 </body>
