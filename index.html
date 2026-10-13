@@ -3,21 +3,10 @@
 <head>
 <meta charset="utf-8">
 <script>(function(){
- var p=new URLSearchParams(location.search).get("p");
- var roles={teacher:["Schooling Teacher","Teacher"],parent:["Schooling Parent","Parent"],super:["Schooling Super Admin","Super Admin"]};
- var r=roles[p];
- var l=document.createElement("link");l.rel="manifest";
- if(r){
-  var start=location.origin+location.pathname+"?p="+p;
-  var mf={name:r[0],short_name:r[1],id:start,start_url:start,scope:location.origin+location.pathname.replace(/[^\/]*$/,""),display:"standalone",background_color:"#212124",theme_color:"#6d5efc",
-   icons:[{src:new URL("icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};
-  l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
-  var m=document.createElement("meta");m.name="apple-mobile-web-app-title";m.content=r[0];document.head.appendChild(m);
- }else{
-  l.href="manifest.webmanifest";
- }
- document.head.appendChild(l);
-})();</script><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+ var f=(location.pathname.match(/\/(teacher|parent|super)\/$/)||[])[1];
+ var names={teacher:"Schooling Teacher",parent:"Schooling Parent",super:"Schooling Super Admin"};
+ if(f){var m=document.createElement("meta");m.name="apple-mobile-web-app-title";m.content=names[f];document.head.appendChild(m)}
+})();</script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Schooling</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -450,18 +439,19 @@ const cpl=()=>JSON.stringify({S,PH,u:S.__u||0});
 async function push(){if(!fbU||!fbdb||!dirty&&lastCloud)return;const u=window.SUPSCHOOL?window.SUPSCHOOL.uid:fbU.uid,str=cpl();if(str.length/1048576>quotaMB()){cstat("⚠ Cloud storage is full. Please upgrade your plan.");return}try{
  const day=dayOf();if(lastCloud&&lsGet("cbsnap@"+u)!==day){const sm=(a,id)=>fbdb.collection("schools").doc(a).collection("snap").doc(day+"_"+id);await writeSet((a,id)=>sm(a,id),lastCloud,u);try{localStorage.setItem("cbsnap@"+u,day)}catch(e){}
   const q=await fbdb.collection("schools").doc(u).collection("snap").get(),old=[...new Set(q.docs.map(d=>d.id.split("_")[0]))].sort().slice(0,-7);for(const d of q.docs)if(old.includes(d.id.split("_")[0]))d.ref.delete()}
- const n=await writeSet((a,id)=>cdoc(a,id),str,u);for(let i=n;i<lastN;i++)cdoc(u,"c"+i).delete().catch(()=>{});lastN=n;lastCloud=str;dirty=false;if(window.SUPSCHOOL)window.SUPSCHOOL.pushes++;cstat("☁ Backed up "+new Date().toTimeString().slice(0,5))}catch(e){dirty=true;cstat("⚠ Backup pending (internet?)")}}
+ const n=await writeSet((a,id)=>cdoc(a,id),str,u);for(let i=n;i<lastN;i++)cdoc(u,"c"+i).delete().catch(()=>{});lastN=n;lastCloud=str;dirty=false;try{localStorage.setItem("cb_last",String(Date.now()))}catch(e){}if(window.SUPSCHOOL)window.SUPSCHOOL.pushes++;cstat("☁ Backed up "+new Date().toTimeString().slice(0,5))}catch(e){dirty=true;cstat("⚠ Backup pending (internet?)")}}
 function pushSoon(){if(!fbU)return;dirty=true;clearTimeout(pushT);pushT=setTimeout(push,4000);if(window.pubSoon)pubSoon()}
 function freshS(){S=norm(JSON.parse(JSON.stringify(DEF)));PH={}}
 function saveLocal(){if(window.RO||window.SUPSCHOOL)return;try{localStorage.setItem("cb2",JSON.stringify(S));localStorage.setItem("cbph",JSON.stringify(PH))}catch(e){}}
 async function onUser(u){if(u&&u.isAnonymous)return;fbU=u;if(isOwner()){if(!window._supFresh){gTab="sup";await fbAuth.signOut();setTimeout(()=>gate(PG==="super"?"Super admin: enter the email and password again.":"For super admin, open the super admin link."),0);return}freshS();setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";hideGate();render();cstat("👑 Super admin: "+acctShow(u.email));return}if(PG==="super"){fbU=null;try{await fbAuth.signOut()}catch(e){}gate("");return}await licLoad(u);const id=u.uid,prev=lsGet("cbuid");let cloud=null,net=true;
  try{const r=await readSet((a,x)=>cdoc(a,x),id,"");if(r){cloud=JSON.parse(r.str);lastCloud=r.str;lastN=Math.ceil(r.str.length/CH)}}catch(e){net=false}
+ if(net){try{localStorage.setItem("cb_last",String(Date.now()))}catch(e){}}else{const lo=+(lsGet("cb_last")||0);if(lo&&Date.now()-lo>48*3600e3){gate("48 ghante se internet nahi mila. Internet chalu karke dobara login karein.");return}}
  let loc=null;if(prev===id)loc={S,PH,u:S.__u||0};else{try{if(prev){localStorage.setItem("cb2@"+prev,cpl())}const r=lsGet("cb2@"+id);if(r)loc=JSON.parse(r);else if(!lsGet("cbhad"))loc={S,PH,u:S.__u||1}}catch(e){}}
  if(cloud&&(!loc||(cloud.u||0)>(loc.u||0))){S=norm(cloud.S);PH=cloud.PH||{}}else if(loc){S=norm(loc.S);PH=loc.PH||{};if(net)dirty=true}else{freshS();dirty=true}
  try{localStorage.setItem("cbuid",id);localStorage.setItem("cbhad","1")}catch(e){}saveLocal();if(!licOK()){paywall();cstat("A plan is required");return}hideGate();if(isOwner()){setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";render();cstat("👑 Super admin: "+acctShow(u.email))}else{if(PG==="school"){me={role:"t",admin:true};link("a");cls=1;tab="hm";away=false}else me=null;render();cstat(net?"☁ Account: "+acctShow(u.email):"⚠ Offline: kaam local save hota rahega")}if(net&&dirty){lastCloud=lastCloud;push()}if(window.pubSoon)pubSoon();if(window.pullReq)setTimeout(pullReq,3000);if(window.pullWrites)setTimeout(window.pullWrites,4000)}
 function gate(msg){if(PG==="teacher"||PG==="parent"){if(!S.settings)S=norm(JSON.parse(JSON.stringify(DEF)));hideGate();if(!me)render();return}let g=$("gate");if(!g){g=document.createElement("div");g.id="gate";g.style.cssText="position:fixed;inset:0;z-index:200;background:var(--bg,#fff);color:var(--ink,#111);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto";document.body.appendChild(g)}
  g.innerHTML=`<div style="max-width:380px;width:100%"><div style="display:flex;gap:6px;margin-bottom:10px"></div>${PG==="super"?superBox(msg):`<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">🏫 ${esc((S.settings||{}).school||"Schooling")}</div><p class="stat">Sign in to the school account. Your full data is backed up in this account and can be restored on any phone.</p><input id="ge" type="text" inputmode="email" placeholder="School email ya mobile number" autocomplete="username" style="margin:6px 0"><input id="gp" type="password" placeholder="Password (at least 6)" autocomplete="current-password" style="margin:6px 0"><button class="btn" style="width:100%;margin:6px 0" onclick="gAuth(0)">Login</button><p class="stat" style="text-align:center">Logins are created by the admin only. Contact the admin for a new login.</p>${FBCFG?"":`<button class="ghost" style="width:100%;margin-top:6px" onclick="localStorage.removeItem('cbfbcfg');location.reload()">🔧 Testing: bina cloud ke kholein (admin / 1234)</button>`}<p class="err" id="gm" role="alert">${msg||""}</p></div>`}</div></div>`}
-const PG=(new URLSearchParams(location.search).get("p")||"school").toLowerCase();
+const PG=(new URLSearchParams(location.search).get("p")||(location.pathname.match(/\/(teacher|parent|super)\/$/)||[])[1]||"school").toLowerCase();
 let gTab="sch";function gTabSet(k){gTab=k;gate("")}
 function superBox(msg){return `<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">👑 Super admin login</div><p class="stat">Super admin Firebase email and password. This login is separate from the school login.</p><input id="sue" type="email" inputmode="email" placeholder="Super admin email" autocomplete="username" style="margin:6px 0"><input id="sup_pw" type="password" placeholder="Password" autocomplete="current-password" style="margin:6px 0" onkeydown="if(event.key==='Enter')superLogin()"><button class="btn" style="width:100%;margin:6px 0" onclick="superLogin()">Super admin login</button><p class="err" id="gm" role="alert">${msg||""}</p></div>`}
 function logLogin(role){try{const u=fbAuth.currentUser;if(!u)return;fbdb.collection("logins").add({uid:u.uid,email:acctShow(u.email),role,at:firebase.firestore.FieldValue.serverTimestamp(),ua:(navigator.userAgent||"").slice(0,120)}).catch(()=>{})}catch(e){}}
@@ -489,16 +479,20 @@ const OWN=()=>OWNER_UID;
 let lic=null,dirD=null,ltab="adm";
 let ownSess=false;const isOwner=()=>ownSess||(!!fbU&&!!OWN()&&fbU.uid===OWN());
 async function licLoad(u){const id=u.uid;try{const dr=fbdb.collection("directory").doc(id);let d=await dr.get();if(!d.exists&&!(OWN()&&id===OWN())){lic={status:"notadded"};dirD={};return}if(!d.exists){await dr.set({email:acctShow(u.email),name:S.settings.school,created:firebase.firestore.FieldValue.serverTimestamp()});d=await dr.get()}dirD=d.data();const l=await fbdb.collection("licenses").doc(id).get();lic=l.exists?l.data():{};lic._tr=dirD.created?dirD.created.toMillis()+BIZ.trialDays*864e5:0;try{localStorage.setItem("cblic@"+id,JSON.stringify({until:lic.until||0,_tr:lic._tr,status:lic.status||""}))}catch(e){}}catch(e){try{const c=JSON.parse(lsGet("cblic@"+id)||"null");if(c)lic=c}catch(x){}}}
-const licOK=()=>isOwner()||!cloudOn()||lic===null||(lic.status!=="suspended"&&lic.status!=="removed"&&((lic.until||0)>Date.now()||(lic._tr||0)>Date.now()));
+const licOK=()=>isOwner()||!cloudOn()||lic===null||(lic.status!=="suspended"&&lic.status!=="removed"&&(((lic.until||0)>Date.now()&&(!lic.from||lic.from<=Date.now()))||(lic._tr||0)>Date.now()));
 const dstr=t=>t?new Date(t).toISOString().slice(0,10):"-";
-function licLine(){if(!cloudOn())return"Cloud account is off";if(isOwner())return"Owner account";if(!lic)return"Plan: checking";if(lic.status==="suspended")return"⛔ Account suspended";if(lic.status==="removed")return"⛔ Account has been removed";if((lic.until||0)>Date.now())return"✅ Paid plan, "+dstr(lic.until)+" tak";if((lic._tr||0)>Date.now())return"🎁 Free trial, "+dstr(lic._tr)+" tak";return"⛔ Plan expired"}
+const dLoc=t=>{if(!t)return"-";const d=new Date(t),p=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())};
+const dIn=t=>t?dLoc(t):"";
+const dayStart=s=>{const p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]).getTime()};
+const dayEnd=s=>{const p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]+1).getTime()-1};
+function licLine(){if(!cloudOn())return"Cloud account is off";if(isOwner())return"Owner account";if(!lic)return"Plan: checking";if(lic.status==="suspended")return"⛔ Account suspended";if(lic.status==="removed")return"⛔ Account has been removed";if((lic.until||0)>Date.now()&&lic.from&&lic.from>Date.now())return"⏳ Access "+dLoc(lic.from)+" se shuru hoga";if((lic.until||0)>Date.now())return"✅ Paid plan, "+(lic.from?dLoc(lic.from)+" se ":"")+dLoc(lic.until)+" tak";if((lic._tr||0)>Date.now())return"🎁 Free trial, "+dstr(lic._tr)+" tak";return"⛔ Plan expired"}
 function paywall(close){let g=$("gate");if(!g){gate("");g=$("gate")}g.innerHTML=`<div class="card" style="max-width:400px;width:100%"><div class="name" style="font-size:1.2rem">💳 ${esc(S.settings.school)}</div><p class="stat">${esc(licLine())}</p><p class="stat">${lic&&lic.status==="notadded"?"This account has not been added yet. Ask the app owner to add it.":"This account has been suspended by the app owner. Please contact the owner."}</p><button class="ghost" style="width:100%;margin:6px 0" onclick="payCheck()">Check again</button>${close?'<button class="ghost" style="width:100%;margin:6px 0" onclick="hideGate()">Close</button>':""}<button class="ghost" style="width:100%" onclick="acctOut()">Logout</button><p class="ok" id="gm" role="status">${dirD&&dirD.txn?"Your payment request is pending: "+esc(dirD.txn):""}</p></div>`}
 async function paySubmit(){const t=$("tx").value.trim(),m=$("gm");if(!t){m.textContent="Enter the transaction ID.";return}try{await fbdb.collection("directory").doc(fbU.uid).update({txn:t,ph:$("tp").value.trim(),reqAt:Date.now()});m.textContent="Sent. Wait for the admin to check."}catch(e){m.textContent="Check your internet and try again."}}
 async function payCheck(){await licLoad(fbU);if(licOK()){hideGate();render()}else $("gm").textContent="The plan is not active yet."}
 function schCard(){if(!cloudOn())return `<div class="card"><div class="name">🏫 School account</div><p class="stat">First paste the Firebase firebaseConfig here once, then press Save. After that the school login will appear.</p><textarea id="fbc" rows="6" style="width:100%;font:inherit;border:2px solid var(--line);border-radius:12px;padding:8px;background:var(--card);color:var(--ink)" placeholder="{ apiKey: '...', authDomain: '...', projectId: '...' }"></textarea><button class="btn" style="width:100%;margin-top:8px" onclick="saveFbCfg()">Save</button></div>`;
  const mb=(cpl().length/1048576).toFixed(2);return `<div class="card"><div class="name">🏫 School account</div><p class="stat">${esc(acctShow(fbU&&fbU.email)||"Not logged in")}</p><p class="stat">${esc(licLine())}</p><p class="stat">Cloud space: ${mb} MB / ${quotaMB()} MB</p><div style="height:8px;background:var(--line);border-radius:6px;overflow:hidden"><div style="height:100%;width:${Math.min(100,mb/quotaMB()*100).toFixed(1)}%;background:var(--acc,#6d5efc)"></div></div><p class="stat" style="word-break:break-all">Account ID: ${esc(fbU?fbU.uid:"-")}</p>${fbU?`<button class="btn" onclick="dirty=true;lastCloud=lastCloud;push()">Back up now</button> <button class="ghost" onclick="paywall(1)">Plan / Payment</button> ${isOwner()?'<button class="ghost" onclick="ownerPanel()">Owner panel</button>':""} <button class="ghost" onclick="acctOut()">Account logout</button>`:'<button class="btn" onclick="gate(\'\')">School login</button>'}</div>`}
 async function ownerPanel(){let g=$("gate");if(!g){gate("");g=$("gate")}g.innerHTML='<div class="card" style="max-width:520px;width:100%"><p>Loading...</p></div>';try{const [d,l]=await Promise.all([fbdb.collection("directory").get(),fbdb.collection("licenses").get()]),L={};l.docs.forEach(x=>L[x.id]=x.data());OSD={};d.docs.forEach(x=>OSD[x.id]=x.data());
- g.innerHTML=`<div class="card" style="max-width:560px;width:100%"><div class="name">👑 Owner panel: ${d.size} schools</div><button class="btn" style="margin:8px 0" onclick="schoolForm()">➕ Add new school</button> <button class="ghost" style="margin:8px 0" onclick="logView()">📋 Login log</button>${d.docs.map(x=>{const v=x.data(),q=L[x.id]||{},pend=v.txn?`<div class="stat" style="color:#b45309">Payment request: ${esc(v.txn)} ${esc(v.ph||"")}</div>`:"";return `<div style="border-top:1px solid var(--line);padding:8px 0"><b>${esc(v.name||"-")}</b> · ${esc(v.email||"")}<div class="stat">Joined ${dstr(v.created&&v.created.toMillis&&v.created.toMillis())} · Paid till ${dstr(q.until)} ${q.status==="suspended"?"· SUSPENDED":""}${q.status==="removed"?"· REMOVED":""}</div>${pend}<button class="btn" onclick="lcExt('${x.id}',1)">+1 month</button> <button class="ghost" onclick="lcExt('${x.id}',12)">+12 months</button> ${v.email&&v.email.includes("@")?`<button class="ghost" onclick="lcReset('${esc(v.email)}')">Password reset email</button> `:""}<button class="btn" onclick="supOpen('${x.id}')">🛠 Settings kholo</button> <button class="ghost" onclick="schoolForm('${x.id}')">✏ Login edit</button> <button class="ghost" style="color:#dc2626" onclick="lcRemove('${x.id}')">🗑 Remove</button> <button class="ghost" onclick="lcQ('${x.id}')">Space ${q.quotaMB||BIZ.quotaMB} MB</button> <button class="ghost" onclick="lcSus('${x.id}',${q.status==="suspended"?0:1})">${q.status==="suspended"?"Unsuspend":"Suspend"}</button></div>`}).join("")}<button class="ghost" style="margin-top:10px" onclick="hideGate()">Close</button></div>`}catch(e){g.innerHTML='<div class="card"><p>Could not load. Check the rules and owner ID.</p><button class="ghost" onclick="hideGate()">Band</button></div>'}}
+ g.innerHTML=`<div class="card" style="max-width:560px;width:100%"><div class="name">👑 Owner panel: ${d.size} schools</div><button class="btn" style="margin:8px 0" onclick="schoolForm()">➕ Add new school</button> <button class="ghost" style="margin:8px 0" onclick="logView()">📋 Login log</button>${d.docs.map(x=>{const v=x.data(),q=L[x.id]||{},pend=v.txn?`<div class="stat" style="color:#b45309">Payment request: ${esc(v.txn)} ${esc(v.ph||"")}</div>`:"";return `<div style="border-top:1px solid var(--line);padding:8px 0"><b>${esc(v.name||"-")}</b> · ${esc(v.email||"")}<div class="stat">Joined ${dstr(v.created&&v.created.toMillis&&v.created.toMillis())} · Access ${q.from?dLoc(q.from)+" se ":""}${dLoc(q.until)} tak ${q.status==="suspended"?"· SUSPENDED":""}${q.status==="removed"?"· REMOVED":""}</div>${pend}<button class="btn" onclick="lcExt('${x.id}',1)">+1 month</button> <button class="ghost" onclick="lcExt('${x.id}',12)">+12 months</button> ${v.email&&v.email.includes("@")?`<button class="ghost" onclick="lcReset('${esc(v.email)}')">Password reset email</button> `:""}<button class="btn" onclick="supOpen('${x.id}')">🛠 Settings kholo</button> <button class="ghost" onclick="schoolForm('${x.id}')">✏ Login edit</button> <button class="ghost" style="color:#dc2626" onclick="lcRemove('${x.id}')">🗑 Remove</button> <button class="ghost" onclick="lcQ('${x.id}')">Space ${q.quotaMB||BIZ.quotaMB} MB</button> <button class="ghost" onclick="lcSus('${x.id}',${q.status==="suspended"?0:1})">${q.status==="suspended"?"Unsuspend":"Suspend"}</button></div>`}).join("")}<button class="ghost" style="margin-top:10px" onclick="hideGate()">Close</button></div>`}catch(e){g.innerHTML='<div class="card"><p>Could not load. Check the rules and owner ID.</p><button class="ghost" onclick="hideGate()">Band</button></div>'}}
 
 // ---- owner: add / edit login / remove schools (uses a 2nd Firebase app so owner stays signed in)
 let OSD={};
@@ -508,7 +502,8 @@ function schoolForm(id){if(!isOwner())return;const e=!!id,v=e?(OSD[id]||{}):{};$
 async function osAdd(){if(!isOwner())return;const m=$("gm"),name=$("os_name").value.trim(),lg=acctId($("os_login").value),pw=$("os_pw").value,mo=+$("os_mo").value;if(!name||!lg.includes("@")){m.textContent="Enter a school name and a valid email or mobile number.";return}if(pw.length<6){m.textContent="Password must be at least 6 characters.";return}m.textContent="Creating...";let au;try{au=secApp().auth();const cr=await au.createUserWithEmailAndPassword(lg,pw),uid=cr.user.uid;await au.signOut();await fbdb.collection("directory").doc(uid).set({email:acctShow(lg),name,created:firebase.firestore.FieldValue.serverTimestamp(),by:"owner"});await fbdb.collection("licenses").doc(uid).set({status:"active",until:mo>0?Date.now()+mo*30*864e5:0,ts:Date.now()});await vaultSet(uid,lg,name,pw);ownerPanel()}catch(x){try{au&&await au.signOut()}catch(y){}m.textContent=fe(x)}}
 async function osSave(id){if(!isOwner())return;const v=OSD[id]||{},m=$("gm"),name=$("os_name").value.trim(),cur=$("os_cur").value,nl=$("os_login").value.trim()?acctId($("os_login").value):"",np=$("os_pw").value,old=acctId(v.email||"");if(np&&np.length<6){m.textContent="New password must be at least 6 characters.";return}if(nl&&!nl.includes("@")){m.textContent="Enter a valid new email or mobile number.";return}if((nl&&nl!==old||np)&&!cur){m.textContent="Enter the current password to change the login or password.";return}m.textContent="Saving...";let au,note="";try{if(name&&name!==v.name)await fbdb.collection("directory").doc(id).update({name});if((nl&&nl!==old)||np){au=secApp().auth();const u=(await au.signInWithEmailAndPassword(old,cur)).user;if(np)await u.updatePassword(np);if(nl&&nl!==old){try{await u.updateEmail(nl);await fbdb.collection("directory").doc(id).update({email:acctShow(nl)})}catch(x){if(x.code==="auth/operation-not-allowed"&&!nl.endsWith("@phone.schooling.app")){await u.verifyBeforeUpdateEmail(nl);note="A verification link was sent to the new email. Open the link to use the new login."}else throw x}}await au.signOut()}if(np||(nl&&nl!==old))await vaultSet(id,nl||v.email,name||v.name,np);if(note)alert(note);ownerPanel()}catch(x){try{au&&await au.signOut()}catch(y){}m.textContent=fe(x)}}
 async function lcRemove(id){if(!isOwner())return;const v=OSD[id]||{};if(!confirm("'"+(v.name||v.email||id)+"' ? This school's cloud data will be erased permanently."))return;const pw=prompt("Also delete the full login? Enter the school's password. If left blank, only the account will be disabled and data erased:")||"";try{await fbdb.collection("licenses").doc(id).set({status:"removed",ts:Date.now()},{merge:true});for(const c of ["cur","snap"]){const q=await fbdb.collection("schools").doc(id).collection(c).get();for(let i=0;i<q.docs.length;i+=400){const b=fbdb.batch();q.docs.slice(i,i+400).forEach(d=>b.delete(d.ref));await b.commit()}}let gone=false;if(pw){try{const au=secApp().auth(),u=(await au.signInWithEmailAndPassword(acctId(v.email||""),pw)).user;await u.delete();gone=true;await au.signOut().catch(()=>{})}catch(x){alert(fe(x)+" Login could not be deleted, but the account has been disabled.")}}if(gone){await fbdb.collection("licenses").doc(id).delete();await fbdb.collection("directory").doc(id).delete()}else alert("Account disabled and data erased. To remove the full login, delete this user in Firebase Console > Authentication.")}catch(x){alert(fe(x))}ownerPanel()}
-async function lcExt(id,m){if(!isOwner())return;const r=fbdb.collection("licenses").doc(id),c=await r.get(),u=Math.max(Date.now(),(c.exists&&c.data().until)||0)+m*30*864e5;await r.set({until:u,status:"active",ts:Date.now()},{merge:true});await fbdb.collection("directory").doc(id).update({txn:firebase.firestore.FieldValue.delete()}).catch(()=>{});ownerPanel()}
+async function lcExt(id,m){if(!isOwner())return;if(!confirm(m>0?"Plan mein "+m+" mahina add karein?":"Plan se "+(-m)+" mahina ghatayein?"))return;const r=fbdb.collection("licenses").doc(id),c=await r.get(),u=Math.max(Date.now(),(c.exists&&c.data().until)||0)+m*30*864e5;await r.set({until:u,status:"active",ts:Date.now()},{merge:true});await fbdb.collection("directory").doc(id).update({txn:firebase.firestore.FieldValue.delete()}).catch(()=>{});ownerPanel()}
+async function lcSetDates(id){if(!isOwner())return;const f=($("lf_"+id)||{}).value,t=($("lt_"+id)||{}).value;if(!f||!t){alert("Dono dates bharein.");return}const from=dayStart(f),until=dayEnd(t);if(until<=from){alert("'Access tak' date, 'Access se' date ke baad honi chahiye.");return}if(!confirm("Access "+f+" se "+t+" tak set karein?"))return;await fbdb.collection("licenses").doc(id).set({from,until,ts:Date.now()},{merge:true});ownerPanel()}
 async function lcQ(id){if(!isOwner())return;const v=prompt("Cloud space for this school in MB (e.g. 1024 = 1 GB):");const n=Math.floor(+v);if(!(n>0))return;await fbdb.collection("licenses").doc(id).set({quotaMB:n},{merge:true});ownerPanel()}
 async function lcSus(id,on){if(!isOwner())return;await fbdb.collection("licenses").doc(id).set({status:on?"suspended":"active"},{merge:true});ownerPanel()}
 function loginTabs(){return ""}
@@ -972,7 +967,7 @@ addEventListener("pagehide",()=>{try{commit(false)}catch(e){}});document.addEven
 setInterval(()=>{try{if(me)commit(false)}catch(e){}},60000);
 if(Array.isArray(CB))CB.push("gd");
 acctStart();init();setTimeout(()=>{try{if(autoCharge())commit(false)}catch(e){}},600);setInterval(()=>{try{if(autoCharge())commit(false)}catch(e){}},3600000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)billTick()});
-if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register(/\/(teacher|parent|super)\/$/.test(location.pathname)?"../sw.js":"sw.js").catch(()=>{}));
 addEventListener("load",()=>{try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}});
 </script>
 <style id="v2css">
@@ -2332,7 +2327,7 @@ window.ownerPanel=async function(){let g=$("gate");if(!g){gate("");g=$("gate")}g
   window.VAULT=V;
   g.innerHTML=`<div class="card" style="max-width:560px;width:100%"><div class="name">👑 Owner panel: ${d.size} schools</div>${vErr?'<p class="stat" style="color:#b45309">Login/code store (vault) could not be opened. Publish the new Firestore rules.</p>':""}<button class="btn" style="margin:8px 0" onclick="schoolForm()">➕ Add new school</button> <button class="ghost" style="margin:8px 0" onclick="logView()">📋 Login log</button>`+d.docs.map(x=>{const v=x.data(),q=L[x.id]||{},c=V[x.id]||{},pend=v.txn?`<div class="stat" style="color:#b45309">Payment request: ${esc(v.txn)} ${esc(v.ph||"")}</div>`:"";
    const cred=c.code?`<div class="stat">Login: <b>${esc(c.login||v.email||"")}</b> · Code: <span id="pw_${x.id}">••••••</span> <button class="ghost" onclick="vaultShow('${x.id}')">👁 Dekhein</button> <button class="ghost" onclick="vaultCopy('${x.id}')">📋 Copy</button></div>`:`<div class="stat">Login: <b>${esc(v.email||"")}</b> · <span style="color:#b45309">Code save nahi hai. ✏ Login edit se naya code dein.</span></div>`;
-   return `<div style="border-top:1px solid var(--line);padding:8px 0"><b>${esc(v.name||"-")}</b> · ${esc(v.email||"")}<div class="stat">Joined ${dstr(v.created&&v.created.toMillis&&v.created.toMillis())} · Paid till ${dstr(q.until)} ${q.status==="suspended"?"· SUSPENDED":""}${q.status==="removed"?"· REMOVED":""}</div>${cred}${pend}<button class="btn" onclick="lcExt('${x.id}',1)">+1 month</button> <button class="ghost" onclick="lcExt('${x.id}',12)">+12 months</button> ${v.email&&v.email.includes("@")?`<button class="ghost" onclick="lcReset('${esc(v.email)}')">Password reset email</button> `:""}<button class="ghost" onclick="schoolForm('${x.id}')">✏ Login edit</button> <button class="ghost" style="color:#dc2626" onclick="lcRemove('${x.id}')">🗑 Remove</button> <button class="ghost" onclick="lcQ('${x.id}')">Space ${q.quotaMB||BIZ.quotaMB} MB</button> <button class="ghost" onclick="lcSus('${x.id}',${q.status==="suspended"?0:1})">${q.status==="suspended"?"Unsuspend":"Suspend"}</button></div>`}).join("")+`<p class="stat" style="margin-top:10px">Give the school only the login email and code. The code is its password and the school logs in with it.</p><button class="ghost" style="margin-top:10px" onclick="hideGate()">Close</button></div>`}
+   return `<div style="border-top:1px solid var(--line);padding:8px 0"><b>${esc(v.name||"-")}</b> · ${esc(v.email||"")}<div class="stat">Joined ${dstr(v.created&&v.created.toMillis&&v.created.toMillis())} · Access ${q.from?dLoc(q.from)+" se ":""}${dLoc(q.until)} tak ${q.status==="suspended"?"· SUSPENDED":""}${q.status==="removed"?"· REMOVED":""}</div>${cred}${pend}<div class="stat">Access se: <input type="date" id="lf_${x.id}" value="${dIn(q.from)}" aria-label="Access se"> tak: <input type="date" id="lt_${x.id}" value="${dIn(q.until)}" aria-label="Access tak"> <button class="ghost" onclick="lcSetDates('${x.id}')">Dates save</button></div><button class="btn" onclick="lcExt('${x.id}',1)">+1 month</button> <button class="ghost" onclick="lcExt('${x.id}',-1)">−1 month</button> <button class="ghost" onclick="lcExt('${x.id}',12)">+12 months</button> ${v.email&&v.email.includes("@")?`<button class="ghost" onclick="lcReset('${esc(v.email)}')">Password reset email</button> `:""}<button class="ghost" onclick="schoolForm('${x.id}')">✏ Login edit</button> <button class="ghost" style="color:#dc2626" onclick="lcRemove('${x.id}')">🗑 Remove</button> <button class="ghost" onclick="lcQ('${x.id}')">Space ${q.quotaMB||BIZ.quotaMB} MB</button> <button class="ghost" onclick="lcSus('${x.id}',${q.status==="suspended"?0:1})">${q.status==="suspended"?"Unsuspend":"Suspend"}</button></div>`}).join("")+`<p class="stat" style="margin-top:10px">Give the school only the login email and code. The code is its password and the school logs in with it.</p><button class="ghost" style="margin-top:10px" onclick="hideGate()">Close</button></div>`}
  catch(e){g.innerHTML='<div class="card"><p>Could not load. Check the rules and owner ID.</p><button class="ghost" onclick="hideGate()">Band</button></div>'}};
 })();
 
@@ -2756,13 +2751,47 @@ window.logout=function(){
 (function(){
 /* ===== PARENT REQUESTS: messages and leave requests from phones go to phonereq/{school}/items; the school phone collects them. ===== */
 const RO_MSG="Read-only on this phone for now. Attendance and marks entry comes in the next update.";
+const RQK="cb_reqq";
+function rqLoad(){try{return JSON.parse(localStorage.getItem(RQK)||"[]")}catch(e){return[]}}
+function rqSave(a){try{localStorage.setItem(RQK,JSON.stringify(a))}catch(e){}}
+async function rqSend(it){
+ if(!fbdb||!fbAuth)return false;
+ const job=(async()=>{
+  if(!fbAuth.currentUser)await fbAuth.signInAnonymously();
+  await fbdb.collection("phonereq").doc(it.school).collection("items").doc(it.id).set(it.doc);
+  return true;
+ })();
+ try{
+  return await Promise.race([job,new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),15000))]);
+ }catch(e){return false}
+}
+let rqBusy=false;
+async function rqFlush(){
+ if(rqBusy||!navigator.onLine)return;
+ if(!rqLoad().length)return;
+ rqBusy=true;
+ try{
+  const sentIds=[];
+  for(const it of rqLoad()){if(await rqSend(it))sentIds.push(it.id)}
+  if(sentIds.length){
+   /* reload before saving so items added during the send loop are kept */
+   rqSave(rqLoad().filter(x=>sentIds.indexOf(x.id)<0));
+   toast("Pending requests sent to the school: "+sentIds.length);
+  }
+ }finally{rqBusy=false}
+}
 async function phoneReq(o){
  const m=window._roMeta;
- if(!m||!fbdb||!fbAuth||!fbAuth.currentUser){toast("No internet. Try again.");return false}
- const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
- try{await fbdb.collection("phonereq").doc(m.school).collection("items").doc(id).set(Object.assign({school:m.school,code:m.code,sid:me.sid,ts:Date.now(),text:"",reason:"",date:""},o));toast("Sent to the school.");return true}
- catch(e){toast("Could not send. Check the internet and try again.");return false}
+ if(!m){toast("Could not send. Sign in again.");return false}
+ const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),school:m.school,doc:Object.assign({school:m.school,code:m.code,sid:me.sid,ts:Date.now(),text:"",reason:"",date:""},o)};
+ if(await rqSend(it)){toast("Sent to the school.");return true}
+ const q=rqLoad();q.push(it);rqSave(q);
+ toast("Saved on this phone. It will be sent when the internet is back.");
+ return true;
 }
+window.addEventListener("online",()=>{setTimeout(rqFlush,2000)});
+setTimeout(rqFlush,3000);
+
 const send0=window.send;
 window.send=function(){
  if(!window.RO)return send0.apply(this,arguments);
@@ -2937,7 +2966,7 @@ window.setPh=function(key,d){if(window.RO){if(window.toast)toast("Read-only on t
 /* ===== OFFLINE COPY: after an online sign-in the phone keeps one copy of its data for 8 hours (cb_off).
    Only a salted hash of the personal code is stored (PBKDF2), never the code.
    The copy is removed at logout and when the 8 hours are over. Unsent changes stay in cb_offq. ===== */
-const KEY="cb_off",MS=8*60*60*1000;
+const KEY="cb_off",MS=48*60*60*1000;
 const hex=b=>Array.from(b).map(x=>x.toString(16).padStart(2,"0")).join("");
 const unhex=h=>Uint8Array.from(h.match(/../g).map(x=>parseInt(x,16)));
 async function pbk(code,saltHex){
@@ -3126,5 +3155,7 @@ V.sa=V.sch=function(){return (isOwner()&&isSuper()&&!window.SUPSCHOOL?ownCard():
  };
 })();
 </script>
+<script>/* first render can run before the last login view is defined (offline it showed the old Activation card); re-draw the login once the page has loaded */
+addEventListener("load",function(){setTimeout(function(){if(!me&&typeof render==="function")render()},0)});</script>
 </body>
 </html>

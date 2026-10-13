@@ -16,6 +16,9 @@ self.addEventListener("fetch",e=>{
     fetch(e.request).then(r=>{
       if(r.ok){const copy=r.clone();caches.open(V).then(c=>c.put(e.request,copy))}
       return r;
-    }).catch(()=>caches.match(e.request).then(m=>m||caches.match("./index.html")))
+    }).catch(()=>caches.match(e.request)
+      .then(m=>m||caches.match(e.request,{ignoreSearch:true}))
+      .then(m=>m||caches.match(new URL("./index.html",e.request.url).href))  // role folder: its own page first
+      .then(m=>m||caches.match("./index.html")))
   );
 });
