@@ -155,7 +155,7 @@ const DEF={pin:"",students:[
  notices:[{id:"n1",kind:"Notice",text:"Parent meeting on Friday at 4 pm.",date:today}],msgs:[]};
 let S=JSON.parse(JSON.stringify(DEF)),ref=null,me=null,tab="",shared=false;
 const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const stu=id=>S.students.find(s=>s.id===id);
 const IC={gd:"📖",hm:"🏠",att:"✅",gr:"📝",fee:"💰",nt:"📢",tt:"🗓️",ex:"📚",lv:"🌴",ms:"💬",st:"🎒",tc:"👩‍🏫",se:"⚙️",me:"🎓",pp:"📄",ap:"🎨",hw:"📓",qz:"🧠",ev:"📅",cu:"🧭"};
@@ -194,14 +194,14 @@ const totalM=p=>p.sections.reduce((a,s)=>a+s.a*s.m,0);
 function setSec(i,k,v){if(!isAd())return;const s=patEdit().sections[i];s[k]=(k==="n"||k==="t"||k==="k")?v:Math.max(0,+v||0);commit()}
 function setTime(v){if(!isAd())return;patEdit().time=v;commit()}
 function resetPat(){if(!isAd())return;delete (PL==="ur"?(S.papers.upat||{}):S.papers.pat)[cls];commit()}
-const KHU={mcq:"(per line: question|choice الف|choice ب|choice ج)",blank:"(per line: sentence with ______ , then optional |choice|choice|choice)",tf:"(one statement per line)",match:"(per line: Column A item|Column B item)",cmp:"(per line: Column A item|Column B item; Column C stays empty)",letters:"(per line: letters joined with + , e.g. ا+ک+ب+ر)",word:"(one word per line; a line is printed after each)",tbl:"(first line: column titles separated by | ; next lines: the sentences)",short:"(one question per line; 1 answer line)",long:"(one question per line; 3 answer lines)",essay:"(one title per line; put یا on its own line between two choices)",para:"(lines starting with # are the passage; other lines are questions)"};
-const kh=s=>(PL==="ur"&&KHU[s.k])?KHU[s.k]:(s.k==="match"&&PL==="ur")?"(one pair per line: word|its meaning, antonym, synonym or plural; no options are printed)":({blank:"(one sentence per line; type ______ where the blank should be)",mcq:"(one per line: question|option 1|option 2|option 3"+(PL==="ur"?")":"|option 4)"),mcq0:"(one question per line)",tf:"(one statement per line)",match:"(one pair per line: Column A item|Column B item)",short:"(one question per line; 2 answer lines are printed)"})[s.k]||"(one question per line)";
+const KHU={mcq:"(per line: question|choice ا|choice ب|choice ج|choice د)",blank:"(per line: sentence with ______ , then optional |choice|choice|choice)",tf:"(one statement per line)",match:"(per line: Column A item|Column B item)",cmp:"(per line: Column A item|Column B item; Column C stays empty)",letters:"(per line: letters joined with + , e.g. ا+ک+ب+ر)",word:"(one word per line; a line is printed after each)",tbl:"(first line: column titles separated by | ; next lines: the sentences)",short:"(one question per line; 1 answer line)",long:"(one question per line; 3 answer lines)",essay:"(one title per line; put یا on its own line between two choices)",para:"(lines starting with # are the passage; other lines are questions)"};
+const kh=s=>(PL==="ur"&&KHU[s.k])?KHU[s.k]:(s.k==="match"&&PL==="ur")?"(one pair per line: word|its meaning, antonym, synonym or plural; no options are printed)":({blank:"(one sentence per line; type ______ where the blank should be)",mcq:"(one per line: question|option 1|option 2|option 3|option 4)",mcq0:"(one question per line)",tf:"(one statement per line)",match:"(one pair per line: Column A item|Column B item)",short:"(one question per line; 2 answer lines are printed)"})[s.k]||"(one question per line)";
 function addSec(){if(!isAd())return;const p=patEdit();p.sections.push({n:String.fromCharCode(65+p.sections.length),t:"New section",q:5,a:5,m:2});commit()}
 function delSec(i){if(!isAd())return;const p=patEdit();p.sections.splice(i,1);if(PL==="ur")p.sections.forEach((x,j)=>x.n=String(j+1));commit()}
-const UK=[["mcq","MCQ (الف ب ج)"],["blank","Fill blanks (optional choices)"],["tf","True / False table"],["match","Match: 2 boxes"],["cmp","Compare: 3 columns (الف ج ب)"],["word","Words with lines (meaning, opposite, plural, sentence)"],["letters","Join letters to make a word (ا+ک+ب+ر)"],["tbl","Classification table"],["short","Short answer, 1 line"],["long","Long answer (جواب: + 3 lines)"],["essay","Essay / application, many lines"],["para","Passage + questions"]];
+const UK=[["mcq","MCQ (ا ب ج د)"],["blank","Fill blanks (optional choices)"],["tf","True / False table"],["match","Match: 2 boxes"],["cmp","Compare: 3 columns (الف ج ب)"],["word","Words with lines (meaning, opposite, plural, sentence)"],["letters","Join letters to make a word (ا+ک+ب+ر)"],["tbl","Classification table"],["short","Short answer, 1 line"],["long","Long answer (جواب: + 3 lines)"],["essay","Essay / application, many lines"],["para","Passage + questions"]];
 const UP=[["MCQ (10)","mcq","درج ذیل سوالات کے درست جوابات پر نشان لگائیں۔",10,10,1],["Fill blanks with choices","blank","مندرجہ ذیل خالی جگہوں میں درست جواب کا انتخاب کریں۔",5,5,1],["Fill blanks","blank","خالی جگہ پُر کریں۔",5,5,1],["True / False table","tf","صحیح اور غلط جملوں کی نشاندہی کریں۔",5,5,1],["Match columns","match","کالم الف کو کالم ب سے ملائیں۔",5,5,1],["Compare 3 columns","cmp","کالم الف اور کالم ب کا موازنہ کر کے کالم ج میں لکھیں۔",5,5,1],["Word meanings","word","الفاظ کے معنی لکھیں۔",6,6,1],["Opposites","word","الفاظ کے متضاد لکھیں۔",5,5,1],["Singular / plural","word","واحد جمع لکھیں۔",5,5,1],["Masculine / feminine","word","مذکر مونث لکھیں۔",5,5,1],["Make sentences","word","درج ذیل الفاظ کے جملے بنائیں۔",5,5,1],["Join letters","word","حروف ملا کر لفظ لکھیں۔",10,10,1],["Classify sentences","tbl","درج ذیل جملوں کو شناخت کر کے لکھیں۔",3,3,1],["Short answers","short","مختصر جوابات لکھیں۔",10,10,2],["Long answers","long","مندرجہ ذیل سوالات کے جوابات تحریر کریں۔",5,5,2],["Essay","essay","مضمون لکھیں۔",1,1,6],["Application / letter","essay","درخواست لکھیں۔",1,1,5],["Passage + questions","para","درج ذیل عبارت غور سے پڑھیں اور سوالات کے جوابات لکھیں۔",3,3,2]];
 function addUrPre(i){if(!isAd()||i==="")return;const x=UP[+i],p=patEdit();p.sections.push({n:String(p.sections.length+1),t:x[2],q:x[3],a:x[4],m:x[5],k:x[1]});commit()}
-function urBody(c,subj,term,qs){const pt=PAT(c),LT=["الف","ب","ج","د"],lnx=(h)=>`<div style="border-bottom:1px solid #000;height:${h||30}px"></div>`,bx="border:1.5px solid #000;padding:9px 12px;text-align:center",hd=bx+";background:#eee;font-weight:700",sp='<td style="border:none;width:16%"></td>',
+function urBody(c,subj,term,qs){const pt=PAT(c),LT=["ا","ب","ج","د"],lnx=(h)=>`<div style="border-bottom:1px solid #000;height:${h||30}px"></div>`,bx="border:1.5px solid #000;padding:9px 12px;text-align:center",hd=bx+";background:#eee;font-weight:700",sp='<td style="border:none;width:16%"></td>',
  row=(n,t)=>`<div style="display:flex;gap:10px;margin:9px 0"><b style="min-width:28px">${UD(n)}.</b><div style="flex:1">${t}</div></div>`,
  body=(s,arr)=>{
   if(s.k==="para"){const ps=arr.filter(x=>x[0]==="#").map(x=>esc(x.slice(1).trim())),Q=arr.filter(x=>x[0]!=="#");let h=ps.length?`<div style="border:1.5px solid #000;padding:10px;margin:8px 0;line-height:2.1">${ps.join("<br>")}</div>`:"";for(let k=0;k<Math.max(Q.length,s.q);k++)h+=row(k+1,`${esc(Q[k]||"")||"&nbsp;"}${lnx()}`);return h}
@@ -212,7 +212,7 @@ function urBody(c,subj,term,qs){const pt=PAT(c),LT=["الف","ب","ج","د"],lnx
   let n=0,h="";
   L.forEach(q0=>{if(q0==="یا"){h+='<div style="text-align:center;font-weight:700;margin:6px 0">یا</div>';return}
    n++;const p=q0.split("|").map(x=>x.trim()),q=esc(p.shift()||"");
-   if(s.k==="mcq"){const o=p.length?p.map(esc):["______","______","______"];h+=row(n,`${q||"&nbsp;"}<div style="display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:3px">${o.map((x,j)=>`<span>${LT[j]||j+1}) ${x}</span>`).join("")}</div>`)}
+   if(s.k==="mcq"){const o=p.length?p.map(x=>esc(String(x||"").replace(/^\s*[\(\[]?\s*(?:الف|ب|ج|د|ا)\s*[\)\]]\s*/,"").trim())).filter(Boolean).slice(0,4):["______","______","______","______"];h+=row(n,`${q||"&nbsp;"}<div style="display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:3px">${o.map((x,j)=>`<span>${LT[j]}) ${x}</span>`).join("")}</div>`)}
    else if(s.k==="blank")h+=`<div style="display:flex;gap:10px;margin:10px 0;align-items:baseline"><b style="min-width:28px">${UD(n)}.</b><span style="flex:1">${q||"&nbsp;"}${q.includes("_")?"":" ______________"}</span>${p.length?`<span style="display:flex;gap:14px;white-space:nowrap">${p.map(x=>`( ${esc(x)} )`).join("")}</span>`:""}</div>`;
    else if(s.k==="tf")h+=`<tr><td style="${bx};width:7%">${UD(n)}</td><td style="${bx.replace("center","right")}">${q||"&nbsp;"}</td><td style="${bx};width:16%"></td></tr>`;
    else if(s.k==="letters")h+=`<div style="display:flex;align-items:flex-end;gap:10px;margin:10px 0"><b style="min-width:28px">${UD(n)}.</b><span style="letter-spacing:1px">${q.split(/[+\s]+/).filter(Boolean).join(" + ")}</span><b>=</b><span style="flex:1;border-bottom:1px dotted #000;height:24px"></span></div>`;
@@ -232,7 +232,7 @@ function paperBody(c,subj,term,qs){if(PL==="ur")return urBody(c,subj,term,qs);co
    if(ur){const bo="flex:1;border:1.5px solid #000;border-radius:6px;padding:8px",hd="text-align:center;font-weight:700;border-bottom:1.5px solid #000;padding-bottom:4px",it=x=>`<div style="padding:7px 4px;border-bottom:1px dotted #999">${x||"&nbsp;"}</div>`;return `<div style="display:flex;gap:60px;align-items:flex-start;margin:8px 0"><div style="${bo}"><div style="${hd}">کالم الف</div>${P.map(p=>it(p[0])).join("")}</div><div style="${bo}"><div style="${hd}">کالم ب</div>${P.map((p,k)=>it(P[sh(k)][1])).join("")}</div></div>`}
    return `<table style="width:100%;border-collapse:collapse;margin:6px 0"><tr><th style="${bx}">${T("Column A","کالم الف")}</th>${ur?"":`<th style="${bx};width:70px">Answer</th>`}<th style="${bx}">${T("Column B","کالم ب")}</th></tr>${P.map((p,k)=>`<tr><td style="${bx}">${ur?"":(k+1)+". "}${p[0]||"&nbsp;"}</td>${ur?"":`<td style="${bx}"></td>`}<td style="${bx}">${ur?"":"("+(LT[k]||k+1)+") "}${P[sh(k)][1]||"&nbsp;"}</td></tr>`).join("")}</table>`}
   for(let k=0;k<s.q;k++){const p=R(k).split("|").map(x=>x.trim()),p0=p[0]||"",q=esc(p.shift()||"")||"&nbsp;";
-   if(s.k==="mcq")li+=`<li style="margin:8px 0">${q}${opts(p.length?p.slice(0,ur?3:4).map(x=>esc(pf(x))):(ur?["______","______","______"]:["______","______","______","______"]))}</li>`;
+   if(s.k==="mcq")li+=`<li style="margin:8px 0">${q}${opts(p.length?p.map(x=>pf(x)).filter(Boolean).slice(0,4).map(esc):["______","______","______","______"])}</li>`;
    else if(s.k==="mcq0")li+=`<li style="margin:8px 0">${q}<div style="margin-top:3px">${T("Answer","جواب")}: ____________________</div></li>`;
    else if(s.k==="tf")li+=`<li style="margin:8px 0">${esc(cl(p0))||"&nbsp;"} &nbsp; <b>( ${T("True / False","درست / غلط")} )</b></li>`;
    else if(s.k==="short")li+=`<li style="margin:8px 0">${q}${ln(ur?1:2)}</li>`;
@@ -379,7 +379,7 @@ function rcp2(id,k,ink,mode){const s=stu(id),pay=s.pay||[],last=pay[pay.length-1
  L=[
  t=>`<div style="flex:1;min-width:240px;border:2px solid #111;font-size:12px"><div style="border-bottom:2px solid #111;padding:6px;text-align:center"><b style="font-size:16px">${esc(nm)}</b>${sub}<div style="letter-spacing:2px;font-size:11px">FEE CHALLAN · ${t}</div></div><table style="width:100%;border-collapse:collapse"><tr><td style="border:1px solid #111;padding:4px">${meta}</td></tr><tr><td style="border:1px solid #111;padding:4px">${who}</td></tr></table><table style="width:100%;border-collapse:collapse"><tr style="background:#eee"><th style="border:1px solid #111;text-align:left;padding:4px">Particulars</th><th style="border:1px solid #111;padding:4px">Amount</th></tr>${rows("border:1px solid #111")}<tr><td style="border:1px solid #111;padding:4px"><b>Total paid</b></td><td style="border:1px solid #111;padding:4px;text-align:right"><b>${c} ${now}</b></td></tr></table><div style="padding:6px">${tot}${CD}<div style="margin-top:14px">Cashier/Stamp: ${ST||"__________"}</div></div></div>`,
  t=>`<div style="width:520px;max-width:100%;display:flex;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.15);font-size:13px"><div style="background:${ac};color:#fff;padding:18px 12px;width:130px;text-align:center">${lgo}<div style="font-weight:800;margin-top:8px">${esc(nm)}</div>${sub}<div style="margin-top:14px;font-size:11px;opacity:.9">${t}</div></div><div style="flex:1;padding:16px"><div style="font-size:22px;font-weight:800;color:${ac}">INVOICE</div><div style="color:#666">${meta}</div><p>${who}</p><table style="width:100%;border-collapse:collapse">${rows("border-bottom:1px solid #ddd")}<tr><td style="padding:8px"><b>Total</b></td><td style="padding:8px;text-align:right;font-size:18px;color:${ac}"><b>${c} ${now}</b></td></tr></table><div style="font-size:12px">${tot}</div>${CD}${ST}${foot}</div></div>`,
- t=>`<div style="width:280px;font-family:monospace;font-size:12px;border:1px dashed #000;padding:10px"><div style="text-align:center"><b style="font-size:15px">${esc(nm)}</b>${sub}<div>--------------------------</div><div>FEE RECEIPT (${t})</div><div>--------------------------</div></div>${meta}<br>${s.name}<br>Class ${s.cls}-${s.sec||"A"}<div>--------------------------</div>${it.map(x=>`<div style="display:flex;justify-content:space-between"><span>${esc(x.h)}</span><span>${x.a}</span></div>`).join("")}<div>--------------------------</div><div style="display:flex;justify-content:space-between"><b>TOTAL</b><b>${c} ${now}</b></div><div>Balance: ${c} ${bl}</div><div style="text-align:center">${CD}${ST}<div>${esc(o.note)}</div></div></div>`,
+ t=>`<div style="width:280px;font-family:monospace;font-size:12px;border:1px dashed #000;padding:10px"><div style="text-align:center"><b style="font-size:15px">${esc(nm)}</b>${sub}<div>--------------------------</div><div>FEE RECEIPT (${t})</div><div>--------------------------</div></div>${meta}<br>${esc(s.name)}<br>Class ${s.cls}-${s.sec||"A"}<div>--------------------------</div>${it.map(x=>`<div style="display:flex;justify-content:space-between"><span>${esc(x.h)}</span><span>${x.a}</span></div>`).join("")}<div>--------------------------</div><div style="display:flex;justify-content:space-between"><b>TOTAL</b><b>${c} ${now}</b></div><div>Balance: ${c} ${bl}</div><div style="text-align:center">${CD}${ST}<div>${esc(o.note)}</div></div></div>`,
  t=>`<div style="display:flex;width:560px;max-width:100%;border:2px solid ${ac};border-radius:12px;overflow:hidden;font-size:13px"><div style="flex:1;padding:14px"><div style="display:flex;gap:10px;align-items:center">${lgo}<div><b style="font-size:17px;color:${ac}">${esc(nm)}</b>${sub}</div></div><hr style="border:0;border-top:1px dashed ${ac}"><p>${who}</p><table style="width:100%;border-collapse:collapse">${rows("")}</table><p style="font-size:20px;color:${ac}"><b>${c} ${now}</b> <small>received</small></p>${foot}</div><div style="width:140px;border-left:3px dotted ${ac};background:${ac}14;padding:10px;text-align:center"><div style="font-size:11px">${t}</div><div style="font-weight:800">${no}</div>${CD}${ST}</div></div>`,
  t=>`<div style="width:520px;max-width:100%;border:6px double ${ac};padding:22px;text-align:center;font-family:Georgia,serif"><div>${lgo}</div><div style="font-size:24px;font-weight:700">${esc(nm)}</div>${sub}<div style="font-size:14px;letter-spacing:3px;color:${ac};margin:10px 0">CERTIFICATE OF FEE PAYMENT</div><p>This certifies that <b style="font-size:18px">${esc(s.name)}</b><br>of Class ${s.cls}-${s.sec||"A"} (ID ${esc(s.user)}) has paid</p>${it.map(x=>`<div>${esc(x.h)}: <b>${c} ${x.a}</b></div>`).join("")}<p style="font-size:22px;color:${ac}"><b>Total ${c} ${now}</b></p><div style="font-size:12px">${meta} · ${tot}</div>${CD}<div style="display:flex;justify-content:space-around;margin-top:16px"><span>Parent: ________</span><span>${ST||"Principal: ________"}</span></div>${foot}</div>`,
  t=>`<div style="width:480px;max-width:100%;border-radius:16px;background:linear-gradient(135deg,${ac}22,#fff);border:1px solid ${ac}55;padding:0;overflow:hidden;font-size:13px"><div style="display:flex;justify-content:space-between;align-items:center;background:${ac};color:#fff;padding:10px 14px"><div style="display:flex;gap:8px;align-items:center">${lgo}<b>${esc(nm)}</b></div><small>${t}</small></div><div style="display:flex;padding:14px;gap:14px"><div style="width:64px;height:64px;border-radius:50%;background:${ac}33;display:flex;align-items:center;justify-content:center;font-size:26px">${(s.name||"?")[0]}</div><div style="flex:1">${who}<br><small>${meta}</small></div><div style="text-align:right"><small>PAID</small><div style="font-size:24px;font-weight:800;color:${ac}">${c} ${now}</div></div></div><div style="padding:0 14px 12px">${it.map(x=>`<span style="display:inline-block;background:${ac}22;border-radius:20px;padding:2px 10px;margin:2px">${esc(x.h)} ${x.a}</span>`).join("")}<div style="margin-top:6px;font-size:12px">${tot}</div>${CD}${ST}${foot}</div></div>`,
@@ -738,7 +738,7 @@ function applyTheme(){const v=lsGet("cbtheme")||"auto",pal=lsGet("cbpal")||(S&&S
 function addTT(){if(!can("tt"))return;const v=$("ttime").value.trim();if(!v){$("ttime").focus();return}S.timetable.push({id:uid(),cls:+cls,day:$("tday").value,time:v,subj:$("tsubj").value});commit()}
 function delTT(id){if(!can("tt"))return;S.timetable=S.timetable.filter(x=>x.id!==id);commit()}
 function saveSet(){if(!isAd())return;const st=S.settings,s1=pl("s_sub1"),s2=pl("s_sub2");
- st.palette=$("s_pal").value;st.autoDelay=Math.max(0,Math.min(240,+$("s_delay").value||0));st.absMsg=$("s_absmsg").value.trim()||DEFMSG;st.cc=$("s_cc").value.replace(/\D/g,"")||"92";st.msgCh=$("s_ch").value==="sms"?"sms":"wa";st.showContacts=$("s_contacts").value==="1";st.pinLogin=$("s_pinlogin").value==="1";st.sat=$("s_sat").value==="1";{const g=$("s_gs").value.split(",").map(x=>+x.trim());if(g.length===5&&g.every((x,i)=>x>=0&&x<=100&&(i===0||x<g[i-1])))st.gs=g.join(",")}st.showCodes=$("s_codes").value==="1";st.idle=Math.max(0,Math.min(240,+$("s_idle").value||0));st.phone=$("s_phone").value.trim();st.principal=$("s_prin").value.trim();st.backdays=Math.max(0,Math.min(365,+$("s_back").value||0));st.showRank=$("s_rank").value==="1";st.showRemark=$("s_rmk").value==="1";PERMS.forEach(([k])=>{st.perm[k]=$("p_"+k).value==="1"});st.school=$("s_name").value.trim()||"Schooling";st.currency=$("s_cur").value.trim()||"Rs";st.pass=Math.max(0,Math.min(100,+$("s_pass").value||40));st.year=$("s_year").value.trim()||st.year;st.minAtt=Math.max(0,Math.min(100,+$("s_min").value||75));st.lateOk=$("s_late").value==="1";st.showFee=$("s_fee").value==="1";st.allowMsg=$("s_msg").value==="1";const trm=[...new Set($("s_terms").value.split(",").map(x=>x.trim()).filter(Boolean))].slice(0,6);if(trm.length){st.terms=trm;if(!trm.includes(st.term))st.term=trm[0]}if(s1.length)st.sub17=s1;if(s2.length)st.sub810=s2;
+ st.palette=$("s_pal").value;{const _sy=$("s_style");if(_sy)st.style=_sy.value}st.autoDelay=Math.max(0,Math.min(240,+$("s_delay").value||0));st.absMsg=$("s_absmsg").value.trim()||DEFMSG;st.cc=$("s_cc").value.replace(/\D/g,"")||"92";st.msgCh=$("s_ch").value==="sms"?"sms":"wa";st.showContacts=$("s_contacts").value==="1";{const _pl=$("s_pinlogin");if(_pl)st.pinLogin=_pl.value==="1"}st.sat=$("s_sat").value==="1";{const g=$("s_gs").value.split(",").map(x=>+x.trim());if(g.length===5&&g.every((x,i)=>x>=0&&x<=100&&(i===0||x<g[i-1])))st.gs=g.join(",")}st.showCodes=$("s_codes").value==="1";st.idle=Math.max(0,Math.min(240,+$("s_idle").value||0));st.phone=$("s_phone").value.trim();st.principal=$("s_prin").value.trim();st.backdays=Math.max(0,Math.min(365,+$("s_back").value||0));st.showRank=$("s_rank").value==="1";st.showRemark=$("s_rmk").value==="1";PERMS.forEach(([k])=>{st.perm[k]=$("p_"+k).value==="1"});st.school=$("s_name").value.trim()||"Schooling";st.currency=$("s_cur").value.trim()||"Rs";st.pass=Math.max(0,Math.min(100,+$("s_pass").value||40));st.year=$("s_year").value.trim()||st.year;st.minAtt=Math.max(0,Math.min(100,+$("s_min").value||75));st.lateOk=$("s_late").value==="1";st.showFee=$("s_fee").value==="1";st.allowMsg=$("s_msg").value==="1";const trm=[...new Set($("s_terms").value.split(",").map(x=>x.trim()).filter(Boolean))].slice(0,6);if(trm.length){st.terms=trm;if(!trm.includes(st.term))st.term=trm[0]}if(s1.length)st.sub17=s1;if(s2.length)st.sub810=s2;
  try{localStorage.setItem("cbtheme",$("s_theme").value)}catch(e){}applyTheme();saved=true;norm(S);commit()}
 function promote(){if(!isAd())return;if(pend!=="promo"){pend="promo";render();return}pend=null;S.students.forEach(s=>{if(s.cls<10)s.cls++});commit()}
 
@@ -915,9 +915,9 @@ function copyOwnRules(){if(!ownSess||!fbAuth||!fbAuth.currentUser){alert("First 
 function seView(){return otherFeesCard()+credCard()+ownerCard()+fbSetupCard()+cloudCard()+seView0()}
 function seView0(){const st=S.settings;$("sub").textContent="School settings";const ok=saved;saved=false;
  const yn=(id,l,v)=>`<label for="${id}" class="stat">${l}</label><select id="${id}" style="margin:2px 0 10px"><option value="1" ${v?"selected":""}>Yes</option><option value="0" ${v?"":"selected"}>No</option></select>`;const f=(id,l,v,ex="")=>`<label for="${id}" class="stat">${l}</label><input id="${id}" value="${esc(v)}" ${ex} style="margin:2px 0 10px">`;
- return launchCard()+`<div class="card">${ok?'<p class="ok" role="status">Settings saved.</p>':""}${f("s_name","School name",st.school)}${f("s_cur","Currency label",st.currency)}${f("s_pass","Pass mark (out of 100)",st.pass,'type="number" min="0" max="100"')}${f("s_year","Academic year",st.year)}${f("s_min","Minimum attendance %",st.minAtt,'type="number" min="0" max="100"')}${yn("s_late","Late counts as present",st.lateOk)}${yn("s_fee","Parents can see fee balance",st.showFee)}${yn("s_msg","Parents can send messages",st.allowMsg)}${f("s_phone","School phone",st.phone)}${f("s_prin","Principal name",st.principal)}${f("s_back","Days back that attendance can be changed",st.backdays,'type="number" min="0" max="365"')}${yn("s_rank","Show class position on report card",st.showRank)}${yn("s_rmk","Show teacher remark on report card",st.showRemark)}<div class="stu" style="margin:6px 0 10px"><span class="crest" style="width:48px;height:48px;font-size:1.4rem;background:var(--line)">${PH.logo?`<img src="${esc(PH.logo)}" alt="" style="width:100%;height:100%;border-radius:18px;object-fit:cover">`:"🏫"}</span><label class="btn" style="display:inline-flex;align-items:center">School logo<input type="file" accept="image/*" hidden onchange="pickPhoto('l','',this.files[0])"></label>${PH.logo?`<button class="ghost" onclick="setPhoto('l','','')">Remove</button>`:""}</div>${yn("s_sat","School is open on Saturday",st.sat)}${f("s_gs","Grade cut-offs for A+, A, B, C, D",st.gs)}${yn("s_codes","Teachers can see parent access codes",st.showCodes)}${f("s_idle","Sign out after this many minutes of no use (0 = never)",st.idle,'type="number" min="0" max="240"')}${yn("s_pinlogin","Allow username and password sign-in",st.pinLogin)}${yn("s_contacts","Teachers can see phone numbers and addresses",st.showContacts)}${f("s_delay","Absence message becomes due after this many minutes (0 = off)",st.autoDelay,'type="number" min="0" max="240"')}${f("s_absmsg","Absence message (use {father}, {student}, {class}, {date}, {school})",st.absMsg)}${f("s_cc","Country code for WhatsApp numbers",st.cc)}<label for="s_ch" class="stat">App for the Message next parent button</label><select id="s_ch" style="margin:2px 0 10px"><option value="wa" ${st.msgCh==="wa"?"selected":""}>WhatsApp</option><option value="sms" ${st.msgCh==="sms"?"selected":""}>SMS</option></select>${f("s_terms","Terms (comma separated)",st.terms.join(", "))}${f("s_sub1","Subjects for Class 1 to 7 (comma separated)",st.sub17.join(", "))}${f("s_sub2","Subjects for Class 8 to 10 (comma separated)",st.sub810.join(", "))}
+ return launchCard()+`<div class="card">${ok?'<p class="ok" role="status">Settings saved.</p>':""}${f("s_name","School name",st.school)}${f("s_cur","Currency label",st.currency)}${f("s_pass","Pass mark (out of 100)",st.pass,'type="number" min="0" max="100"')}${f("s_year","Academic year",st.year)}${f("s_min","Minimum attendance %",st.minAtt,'type="number" min="0" max="100"')}${yn("s_late","Late counts as present",st.lateOk)}${yn("s_fee","Parents can see fee balance",st.showFee)}${yn("s_msg","Parents can send messages",st.allowMsg)}${f("s_phone","School phone",st.phone)}${f("s_prin","Principal name",st.principal)}${f("s_back","Days back that attendance can be changed",st.backdays,'type="number" min="0" max="365"')}${yn("s_rank","Show class position on report card",st.showRank)}${yn("s_rmk","Show teacher remark on report card",st.showRemark)}<div class="stu" style="margin:6px 0 10px"><span class="crest" style="width:48px;height:48px;font-size:1.4rem;background:var(--line)">${PH.logo?`<img src="${esc(PH.logo)}" alt="" style="width:100%;height:100%;border-radius:18px;object-fit:cover">`:"🏫"}</span><label class="btn" style="display:inline-flex;align-items:center">School logo<input type="file" accept="image/*" hidden onchange="pickPhoto('l','',this.files[0])"></label>${PH.logo?`<button class="ghost" onclick="setPhoto('l','','')">Remove</button>`:""}</div>${yn("s_sat","School is open on Saturday",st.sat)}${f("s_gs","Grade cut-offs for A+, A, B, C, D",st.gs)}${yn("s_codes","Teachers can see parent access codes",st.showCodes)}${f("s_idle","Sign out after this many minutes of no use (0 = never)",st.idle,'type="number" min="0" max="240"')}${yn("s_contacts","Teachers can see phone numbers and addresses",st.showContacts)}${f("s_delay","Absence message becomes due after this many minutes (0 = off)",st.autoDelay,'type="number" min="0" max="240"')}${f("s_absmsg","Absence message (use {father}, {student}, {class}, {date}, {school})",st.absMsg)}${f("s_cc","Country code for WhatsApp numbers",st.cc)}<label for="s_ch" class="stat">App for the Message next parent button</label><select id="s_ch" style="margin:2px 0 10px"><option value="wa" ${st.msgCh==="wa"?"selected":""}>WhatsApp</option><option value="sms" ${st.msgCh==="sms"?"selected":""}>SMS</option></select>${f("s_terms","Terms (comma separated)",st.terms.join(", "))}${f("s_sub1","Subjects for Class 1 to 7 (comma separated)",st.sub17.join(", "))}${f("s_sub2","Subjects for Class 8 to 10 (comma separated)",st.sub810.join(", "))}
  <div class="name" style="margin:8px 0">What teachers can change</div>${PERMS.map(([k,l])=>yn("p_"+k,l,st.perm[k])).join("")}
- <label for="s_pal" class="stat">Colour theme</label><select id="s_pal" style="margin:2px 0 10px">${Object.keys(PALS).map(x=>`<option value="${x}" ${x===st.palette?"selected":""}>${x[0].toUpperCase()+x.slice(1)}</option>`).join("")}</select>
+ <label for="s_pal" class="stat">Colour theme</label><select id="s_pal" style="margin:2px 0 10px">${Object.keys(PALS).map(x=>`<option value="${x}" ${x===st.palette?"selected":""}>${x[0].toUpperCase()+x.slice(1)}</option>`).join("")}</select><label for="s_style" class="stat">Design style (for everyone in the school)</label><select id="s_style" style="margin:2px 0 10px"><option value="" ${(st.style||"")===""?"selected":""}>Original</option><option value="clay" ${(st.style||"")==="clay"?"selected":""}>Claymorphism</option><option value="glass" ${(st.style||"")==="glass"?"selected":""}>Glassmorphism</option><option value="brutal" ${(st.style||"")==="brutal"?"selected":""}>Neubrutalism</option><option value="minimal" ${(st.style||"")==="minimal"?"selected":""}>Minimalist</option><option value="darkgrad" ${(st.style||"")==="darkgrad"?"selected":""}>Dark gradient (always dark)</option><option value="retro" ${(st.style||"")==="retro"?"selected":""}>Y2K retro (always light)</option></select>
  <label for="s_theme" class="stat">Theme on this device</label><select id="s_theme" style="margin:2px 0 12px"><option value="auto">Match device</option><option value="light">Light</option><option value="dark">Dark</option></select><button class="btn" style="width:100%" onclick="saveSet()">Save settings</button></div>
  <div class="card"><div class="name">Admin PIN and recovery email</div><label for="cp_old" class="stat">Current PIN</label><input id="cp_old" type="password" inputmode="numeric" style="margin:2px 0 8px"><label for="cp_new" class="stat">New PIN (6+ characters)</label><input id="cp_new" type="password" style="margin:2px 0 8px"><label for="cp_mail" class="stat">Recovery email</label><input id="cp_mail" type="email" value="${esc(S.adminEmail||"")}" style="margin:2px 0 10px"><button class="btn" style="width:100%" onclick="changePin()">Save PIN and email</button><p class="bad" id="cp_err" role="alert"></p></div>
  
@@ -2164,7 +2164,7 @@ function sha256(m){const l=m.length,nb=((l+9+63)>>6),buf=new Uint8Array(nb*64);b
  const out=new Uint8Array(32),ov=new DataView(out.buffer);h.forEach((x,i)=>ov.setUint32(i*4,x));return out}
 const enc=new TextEncoder(),SALT=enc.encode("schooling|super|v1|7f3a9c21"),ROUNDS=30000;
 function kdf(code){let h=sha256(enc.encode("S|"+code));const b=new Uint8Array(48);b.set(SALT.subarray(0,16),32);for(let i=0;i<ROUNDS;i++){b.set(h,0);h=sha256(b)}return Array.from(h,x=>x.toString(16).padStart(2,"0")).join("")}
-window.__kdf=kdf;
+
 const SUPER2="4354dead34e4ba49eb6aafb106be2556c9b64d085612dbb7c990f08280b044b6";
 const legacy=window.supHash;let memo=["",false];
 window.supHash=c=>"k1$"+kdf(String(c||"").trim());
@@ -2180,8 +2180,8 @@ const LKW=(key,fnName,errId)=>{
   if(st.until&&st.until>now){if(e)e.textContent="Too many wrong attempts. "+Math.ceil((st.until-now)/60000)+" minutes later, try again.";return}
   const before=window.me;orig.apply(this,arguments);if(window._async)return;
   if(window.me&&window.me!==before){wr({});return}
-  const lv=st.lv||0,need=lv===0?10:5,n=(st.n||0)+1;
-  if(n>=need){const mins=5*Math.pow(2,lv);wr({n:0,lv:lv+1,until:Date.now()+mins*60000});if(e)e.textContent=need+" wrong attempts. "+mins+" minute ke liye lock.";}
+  const lv=st.lv||0,need=5,n=(st.n||0)+1;
+  if(n>=need){const mins=lv+1;wr({n:0,lv:lv+1,until:Date.now()+mins*60000});if(e)e.textContent=need+" wrong attempts. "+mins+" minute ke liye lock.";}
   else{wr({n,lv});}
   const p=document.getElementById("lp");if(p)p.value="";
  };
@@ -2194,7 +2194,7 @@ window.loginView=function(){const r=pgRole();ltab=r;
  const top=(S.settings.welcome?`<p style="text-align:center;font-weight:700;margin:0 0 10px">${esc(S.settings.welcome)}</p>`:"")+resumeCard();
  $("title").textContent=S.settings.school;
  if(r==="adm"){$("sub").textContent="Admin";
-  return top+`<div class="card"><div class="name" style="text-align:center;font-size:1.3rem">👤 Admin login</div><p class="stat" style="text-align:center;margin:4px 0 10px">The admin ID is <b>admin</b>. The school gave you the password.</p><label for="lu" class="stat">ID</label><input id="lu" autocapitalize="none" autocomplete="username" style="margin:2px 0 8px"><label for="lp" class="stat">Password</label><input id="lp" type="password" autocomplete="current-password" style="margin:2px 0 10px" onkeydown="if(event.key==='Enter')signin()"><button class="btn" style="width:100%" onclick="signin()">Login</button></div><p class="bad" id="err" role="alert"></p>`}
+  return top+`<div class="card" style="text-align:center"><div class="name" style="font-size:1.3rem">🏫 School account</div><p class="stat" style="margin:4px 0 10px">Sign in to the school account to continue.</p><button class="btn" style="width:100%" onclick="gate('')">Sign in</button></div>`}
  const t=r==="tch";$("sub").textContent=t?"Teachers":"Students & Parents";
  return top+`<div class="card"><div class="name" style="text-align:center;font-size:1.3rem">${t?"👩‍🏫 Teacher login":"👨‍👩‍👧 Students & Parents login"}</div><p class="stat" style="text-align:center;margin:4px 0 10px">${t?"Enter the code the school gave you.":"Enter the student or parent code the school gave you."}</p><label for="lp" class="stat">Code</label><input id="lp" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Code" style="margin:2px 0 10px;text-align:center;font-size:1.15rem;letter-spacing:.12em" onkeydown="if(event.key==='Enter')signin()"><button class="btn" style="width:100%" onclick="signin()">Login</button></div><p class="bad" id="err" role="alert"></p>`};
 function adminIn(e){const u=cc(($("lu")||{}).value).toLowerCase(),p=($("lp")||{}).value||"";
@@ -2732,8 +2732,8 @@ window.phoneIn=async function(e){
   if(r.ok)ok=true;else if(r.wrong)wrong=true;else msg=r.msg||"Check the internet connection and try again.";
  }
  if(ok){lkWr({});return}
- if(wrong){const lv=st.lv||0,need=lv===0?10:5,n=(st.n||0)+1;
-  if(n>=need){const mins=5*Math.pow(2,lv);lkWr({n:0,lv:lv+1,until:Date.now()+mins*60000});msg=need+" wrong attempts. Locked for "+mins+" minutes."}
+ if(wrong){const lv=st.lv||0,need=5,n=(st.n||0)+1;
+  if(n>=need){const mins=lv+1;lkWr({n:0,lv:lv+1,until:Date.now()+mins*60000});msg=need+" wrong attempts. Locked for "+mins+" minutes."}
   else{lkWr({n,lv});msg="Wrong code."}}
  e.textContent=msg||"Wrong code.";
 };
@@ -3157,5 +3157,132 @@ V.sa=V.sch=function(){return (isOwner()&&isSuper()&&!window.SUPSCHOOL?ownCard():
 </script>
 <script>/* first render can run before the last login view is defined (offline it showed the old Activation card); re-draw the login once the page has loaded */
 addEventListener("load",function(){setTimeout(function(){if(!me&&typeof render==="function")render()},0)});</script>
+<script>/* live countdown shown while the login is locked (reads the existing lock data; changes nothing else) */
+(function(){var M="Too many wrong attempts. Try again in ";setInterval(function(){try{var e=document.getElementById("err");if(!e)return;var k=(typeof ltab!=="undefined"&&ltab==="sup")?"cb_lk2":"cb_lk",st=JSON.parse(localStorage.getItem(k)||"{}"),left=Math.ceil(((st.until||0)-Date.now())/1000);if(left>0){var s=left>=60?Math.floor(left/60)+" min "+(left%60)+" sec":left+" sec";e.textContent=M+s}else if(e.textContent.indexOf(M)===0){e.textContent=""}}catch(x){}},1000)})();</script>
+<script>/* school logout: really sign out of the school account, so the school-account page asks for the password again */
+(function(){var lo=window.logout;if(typeof lo!=="function")return;
+window.logout=function(){
+var ad=false,man=false;try{ad=PG==="school"&&me&&me.admin&&!me.sup;var ev=window.event;man=!!(ev&&ev.isTrusted&&ev.type==="click")}catch(e){}
+if(ad&&man){try{window.doBackup()}catch(e){}} /* admin taps Logout: a backup file is saved automatically (the cloud copy is sent below) */
+var r=lo.apply(this,arguments);
+if(PG==="school"&&!me){(async function(){try{if(fbAuth&&fbAuth.currentUser){try{await push()}catch(e){}await fbAuth.signOut()}}catch(e){}})()}
+return r}})();</script>
+<script>/* remember the school email and password on this device; allow offline sign-in (up to 48 hours without internet) */
+(function(){
+var KE="cb_ge",KP="cb_gp",KO="cb_offc",KT="cb_ontime",H48=48*3600e3;
+function get(k){try{return localStorage.getItem(k)||""}catch(x){return ""}}
+function set(k,v){try{localStorage.setItem(k,v)}catch(x){}}
+function mark(){if(navigator.onLine!==false)set(KT,String(Date.now()))}
+mark();setInterval(mark,60000);addEventListener("online",mark);
+function hx(u){return Array.from(u,function(b){return b.toString(16).padStart(2,"0")}).join("")}
+async function pb(txt,sh){var salt=new Uint8Array(sh.match(/../g).map(function(h){return parseInt(h,16)}));var k=await crypto.subtle.importKey("raw",new TextEncoder().encode(txt),"PBKDF2",false,["deriveBits"]);return hx(new Uint8Array(await crypto.subtle.deriveBits({name:"PBKDF2",salt:salt,iterations:100000,hash:"SHA-256"},k,256)))}
+function lid(e){return String(acctId(e)).toLowerCase()}
+async function saveOff(e,p,uid){try{if(!window.crypto||!crypto.subtle)return;var sb=new Uint8Array(16);crypto.getRandomValues(sb);var sl=hx(sb),id=lid(e);set(KO,JSON.stringify({e:id,s:sl,h:await pb(id+"|"+p,sl),u:uid}))}catch(x){}}
+async function offTry(e,p){var m=document.getElementById("gm");function say(t){if(m)m.textContent=t}
+if(!e||!p){say("Enter email and password.");return}
+say("Please wait...");
+var o=null;try{o=JSON.parse(get(KO)||"null")}catch(x){}
+if(!o||!window.crypto||!crypto.subtle){say("No internet connection. Sign in once with internet first.");return}
+if(Date.now()-(+get(KT)||0)>H48){say("No internet for 48 hours. Connect to the internet and sign in.");return}
+var id=lid(e);
+if(id!==o.e||await pb(id+"|"+p,o.s)!==o.h){say("Wrong email or password.");return}
+if(get("cbuid")!==o.u){say("No saved data for this account on this phone. Connect to the internet.");return}
+me={role:"t",admin:true};cls=1;tab="hm";away=false;hideGate();render();cstat("\u26A0 Offline: kaam local save hota rahega")}
+var g0=window.gate;
+if(typeof g0==="function")window.gate=function(){var r=g0.apply(this,arguments);try{if(PG==="school"){var e=document.getElementById("ge"),p=document.getElementById("gp");if(e&&!e.value)e.value=get(KE);if(p&&!p.value)p.value=get(KP)}}catch(x){}return r};
+var a0=window.gAuth;
+if(typeof a0==="function")window.gAuth=async function(){
+var e=(document.getElementById("ge")||{}).value||"",p=(document.getElementById("gp")||{}).value||"";
+if(navigator.onLine===false||!fbAuth){await offTry(e,p);return}
+var r=await a0.apply(this,arguments);
+try{var u=fbAuth&&fbAuth.currentUser,m=document.getElementById("gm");
+if(e&&p&&u&&!u.isAnonymous&&String(u.email).toLowerCase()===lid(e)&&(!m||m.textContent==="Please wait...")){set(KE,e);set(KP,p);saveOff(e,p,u.uid)}
+else if(m&&m.textContent==="No internet connection."){await offTry(e,p)}}catch(x){}
+return r};
+})();</script>
+<script>/* school-account and super-admin sign-in pages: every 5 wrong = 1, 2, 3... minutes (same as the other logins) */
+(function(){
+function rd(k){try{return JSON.parse(localStorage.getItem(k)||"{}")}catch(x){return{}}}
+function wr(k,o){try{localStorage.setItem(k,JSON.stringify(o))}catch(x){}}
+function left(k){var st=rd(k);return Math.ceil(((st.until||0)-Date.now())/1000)}
+function fmt(l){return l>=60?Math.floor(l/60)+" min "+(l%60)+" sec":l+" sec"}
+var M="Too many wrong attempts. Try again in ";
+function wrap(name,key){var f=window[name];if(typeof f!=="function")return;
+window[name]=async function(){var m=document.getElementById("gm"),l=left(key);
+if(l>0){if(m)m.textContent=M+fmt(l);return}
+var r=await f.apply(this,arguments);
+try{var m2=document.getElementById("gm"),t=m2?m2.textContent:"";
+if(!m2||t==="Please wait..."){wr(key,{});return r}
+if(/^(Wrong|Account not found|This account is not the owner)/.test(t)){var st=rd(key),lv=st.lv||0,n=(st.n||0)+1;
+if(n>=5){var mins=lv+1;wr(key,{n:0,lv:lv+1,until:Date.now()+mins*60000});m2.textContent="5 wrong attempts. Locked for "+mins+" minute"+(mins>1?"s":"")+"."}
+else wr(key,{n:n,lv:lv})}}catch(x){}
+return r}}
+wrap("gAuth","cb_lk3");wrap("superLogin","cb_lk4");
+setInterval(function(){try{var m=document.getElementById("gm");if(!m)return;var l=left(PG==="super"?"cb_lk4":"cb_lk3");
+if(l>0)m.textContent=M+fmt(l);else if(m.textContent.indexOf(M)===0)m.textContent=""}catch(x){}},1000);
+})();</script>
+<style id="stylepack">
+:root[data-style="clay"]{--shd:rgba(80,60,150,.20);--hl:rgba(255,255,255,.85);--bg:#eceaff;--card:#f4f2ff}
+@media (prefers-color-scheme:dark){:root[data-style="clay"]:not([data-theme="light"]){--shd:rgba(0,0,0,.55);--hl:rgba(255,255,255,.07);--bg:#1a1938;--card:#222049}}
+:root[data-style="clay"][data-theme="dark"]{--shd:rgba(0,0,0,.55);--hl:rgba(255,255,255,.07);--bg:#1a1938;--card:#222049}
+:root[data-style="clay"] .card,:root[data-style="clay"] .qa button,:root[data-style="clay"] .seg button,:root[data-style="clay"] .sw{border:0;border-radius:28px;box-shadow:9px 9px 20px var(--shd),-7px -7px 16px var(--hl),inset 2px 2px 5px var(--hl),inset -3px -3px 7px var(--shd)}
+:root[data-style="clay"] .btn{border-radius:22px;box-shadow:6px 6px 14px var(--shd),-4px -4px 10px var(--hl),inset 3px 3px 6px rgba(255,255,255,.45),inset -4px -4px 8px rgba(0,0,0,.2)}
+:root[data-style="clay"] input,:root[data-style="clay"] select,:root[data-style="clay"] textarea{border:0;border-radius:20px;background:var(--bg);box-shadow:inset 5px 5px 10px var(--shd),inset -5px -5px 10px var(--hl)}
+:root[data-style="clay"] .hero{border-radius:0 0 42px 42px;box-shadow:0 12px 26px var(--shd),inset 4px 4px 10px rgba(255,255,255,.35),inset -6px -6px 12px rgba(0,0,0,.18)}
+:root[data-style="clay"] .tile,:root[data-style="clay"] .cnt,:root[data-style="clay"] .crest{border-radius:26px;box-shadow:7px 7px 16px var(--shd),inset 3px 3px 7px rgba(255,255,255,.4),inset -4px -4px 8px rgba(0,0,0,.18)}
+:root[data-style="clay"] nav{border:0;border-radius:32px 32px 0 0;background:var(--card);box-shadow:0 -8px 22px var(--shd),inset 0 3px 6px var(--hl)}
+:root[data-style="clay"] .msg{border-radius:22px}
+:root[data-style="glass"] body{background:linear-gradient(135deg,color-mix(in srgb,var(--g1) 38%,var(--bg)),color-mix(in srgb,var(--g2) 38%,var(--bg))) fixed}
+:root[data-style="glass"] .card,:root[data-style="glass"] .qa button,:root[data-style="glass"] .seg button,:root[data-style="glass"] .sw{background:color-mix(in srgb,var(--card) 55%,transparent);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.38);box-shadow:0 8px 28px rgba(31,38,135,.16)}
+:root[data-style="glass"] input,:root[data-style="glass"] select,:root[data-style="glass"] textarea{background:color-mix(in srgb,var(--card) 50%,transparent);border:1px solid rgba(255,255,255,.4);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+:root[data-style="glass"] nav{background:color-mix(in srgb,var(--card) 60%,transparent);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);border-top:1px solid rgba(255,255,255,.4)}
+:root[data-style="glass"] .hero{background:linear-gradient(135deg,color-mix(in srgb,var(--g1) 80%,transparent),color-mix(in srgb,var(--g2) 80%,transparent));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+:root[data-style="brutal"] .card,:root[data-style="brutal"] .qa button,:root[data-style="brutal"] .seg button,:root[data-style="brutal"] .sw,:root[data-style="brutal"] .tile,:root[data-style="brutal"] .cnt,:root[data-style="brutal"] .lnk{border:3px solid var(--ink);border-radius:8px;box-shadow:5px 5px 0 var(--ink)}
+:root[data-style="brutal"] input,:root[data-style="brutal"] select,:root[data-style="brutal"] textarea{border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink)}
+:root[data-style="brutal"] .btn{background:var(--g1);border:3px solid var(--ink);border-radius:8px;box-shadow:4px 4px 0 var(--ink);font-weight:800}
+:root[data-style="brutal"] .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+:root[data-style="brutal"] .hero{background:var(--g1);border:3px solid var(--ink);border-radius:0 0 12px 12px;box-shadow:0 5px 0 var(--ink)}
+:root[data-style="brutal"] nav{border-top:3px solid var(--ink);border-radius:0;box-shadow:none}
+:root[data-style="brutal"] .name,:root[data-style="brutal"] .big{font-weight:800}
+:root[data-style="minimal"]{--sh:none}
+:root[data-style="minimal"] .card,:root[data-style="minimal"] .qa button,:root[data-style="minimal"] .seg button,:root[data-style="minimal"] .sw,:root[data-style="minimal"] .tile{border-radius:8px;box-shadow:none}
+:root[data-style="minimal"] .card{border:1px solid var(--line)}
+:root[data-style="minimal"] input,:root[data-style="minimal"] select,:root[data-style="minimal"] textarea{border:1px solid var(--line);border-radius:6px}
+:root[data-style="minimal"] .btn{background:var(--ink);color:var(--bg);border-radius:6px;box-shadow:none}
+:root[data-style="minimal"] .hero{background:var(--card);color:var(--ink);border-radius:0;border-bottom:1px solid var(--line);box-shadow:none}
+:root[data-style="minimal"] .hero .sub{color:var(--mut)}
+:root[data-style="minimal"] .crest{background:var(--line)}
+:root[data-style="minimal"] nav{border-radius:0;box-shadow:none}
+:root[data-style="darkgrad"]{--bg:#0b0b1a;--card:#14142b;--ink:#ecebff;--mut:#a4a3c8;--line:#2a2a52;--sh:0 8px 30px rgba(109,94,252,.18);color-scheme:dark}
+:root[data-style="darkgrad"] body{background:radial-gradient(60% 40% at 15% 0%,color-mix(in srgb,var(--g1) 30%,transparent),transparent 70%),radial-gradient(50% 40% at 100% 20%,color-mix(in srgb,var(--g2) 24%,transparent),transparent 70%),var(--bg) fixed}
+:root[data-style="darkgrad"] .card,:root[data-style="darkgrad"] .qa button{border:1px solid var(--line);box-shadow:0 0 0 1px rgba(255,255,255,.03),var(--sh)}
+:root[data-style="darkgrad"] .btn,:root[data-style="darkgrad"] .tile{box-shadow:0 6px 22px color-mix(in srgb,var(--g1) 45%,transparent)}
+:root[data-style="darkgrad"] .hero{box-shadow:0 10px 40px color-mix(in srgb,var(--g1) 40%,transparent)}
+:root[data-style="darkgrad"] nav{background:color-mix(in srgb,var(--card) 88%,transparent);border-top:1px solid var(--line)}
+:root[data-style="retro"]{--bg:#ffe9f8;--card:#ffffff;--ink:#2b0a3d;--mut:#7a4d93;--line:#d9a6f2;--g1:#ff6fc8;--g2:#6fd8ff;--acc:#a23bff;--sh:4px 4px 0 #ff9ad8;color-scheme:light}
+:root[data-style="retro"] .card,:root[data-style="retro"] .qa button,:root[data-style="retro"] .seg button,:root[data-style="retro"] .sw{border:2px solid #a23bff;border-radius:14px;box-shadow:4px 4px 0 #ff9ad8}
+:root[data-style="retro"] input,:root[data-style="retro"] select,:root[data-style="retro"] textarea{border:2px solid #a23bff;border-radius:10px}
+:root[data-style="retro"] .btn{background:linear-gradient(180deg,#ffe0f5,#ff6fc8 55%,#e24aa8);color:#2b0a3d;border:2px solid #2b0a3d;border-radius:12px;box-shadow:3px 3px 0 #2b0a3d;font-weight:700}
+:root[data-style="retro"] .hero{background:linear-gradient(135deg,#ff6fc8,#6fd8ff);border-bottom:3px solid #2b0a3d}
+:root[data-style="retro"] nav{border-top:3px solid #a23bff;border-radius:0}
+</style>
+<script>/* school-wide design style: set from Settings, applied to everyone (teachers and parents get it too) */
+(function(){var a=window.applyTheme;if(typeof a!=="function")return;
+function st(){try{document.documentElement.dataset.style=(S&&S.settings&&S.settings.style)||""}catch(e){}}
+window.applyTheme=function(){var r=a.apply(this,arguments);st();return r};st()})();</script>
+<script>/* Library: book cover photo with Camera and Gallery buttons (admin only) */
+(function(){
+if(typeof V==="undefined"||typeof V.lib!=="function")return;
+var pick=function(fn,cam,label){return `<label class="ghost" style="display:inline-block;cursor:pointer;padding:8px 12px;border:2px solid var(--line);border-radius:12px;margin:4px 6px 4px 0">${label}<input type="file" accept="image/*"${cam?' capture="environment"':''} style="display:none" onchange="${fn};this.value=''"></label>`};
+var thumb=function(d){return d?`<img src="${d}" alt="cover" style="width:44px;height:60px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:8px">`:""};
+var v0=V.lib;
+V.lib=function(){var h=v0.apply(this,arguments);if(!h)return h;
+h=h.replace('<button class="btn" style="width:100%;margin-top:8px" onclick="lbAdd()">',function(m){return `<div style="margin-top:8px"><span id="lbpv">${thumb(window._lbPh)}</span>${pick("lbPick(this.files[0])",true,"\u{1F4F7} Camera")}${pick("lbPick(this.files[0])",false,"\u{1F5BC}\uFE0F Gallery")}</div>`+m});
+h=h.replace(/onclick="lbDel\('([^']+)'\)">Remove<\/button><\/div>/g,function(m,id){var b=(S.books||[]).find(function(x){return x.id===id});return m+`<div style="margin-top:6px">${thumb(b&&b.photo)}${pick("lbPhoto('"+id+"',this.files[0])",true,"\u{1F4F7}")}${pick("lbPhoto('"+id+"',this.files[0])",false,"\u{1F5BC}\uFE0F")}</div>`});
+return h};
+window.lbPick=function(f){if(!f||!isAd())return;shrink(f,300,.6).then(function(d){window._lbPh=d;var e=document.getElementById("lbpv");if(e)e.innerHTML=thumb(d);toast("Photo ready. Now tap Add book.")}).catch(function(){toast("The photo could not be read")})};
+window.lbPhoto=function(id,f){if(!f||!isAd())return;shrink(f,300,.6).then(function(d){var b=(S.books||[]).find(function(x){return x.id===id});if(b){b.photo=d;commit()}}).catch(function(){toast("The photo could not be read")})};
+window.lbAdd=function(){if(!isAd())return;var t=($("lbt").value||"").trim();if(!t){toast("Enter a book title");return}S.books=S.books||[];var b={id:uid(),title:t,author:($("lba").value||"").trim(),copies:Math.max(1,(+$("lbc").value)||1),issued:[]};if(window._lbPh){b.photo=window._lbPh;window._lbPh=null}S.books.push(b);commit()};
+})();</script>
 </body>
 </html>
