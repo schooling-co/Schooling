@@ -3,10 +3,13 @@
 <head>
 <meta charset="utf-8">
 <script>(function(){
- var f=(location.pathname.match(/\/(teacher|parent|super)\/$/)||[])[1];
+ var m=location.pathname.match(/^(.*\/)(teacher|parent|super)(?:\/(?:index\.html)?)?$/),f=m&&m[2],R=m?m[1]+f+"/":"";
+ window.__RD=m?m[1]:"";
  var names={teacher:"Schooling Teacher",parent:"Schooling Parent",super:"Schooling Super Admin"};
- if(f){var m=document.createElement("meta");m.name="apple-mobile-web-app-title";m.content=names[f];document.head.appendChild(m)}
-})();</script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+ function L(rel,href,ty){var l=document.createElement("link");l.rel=rel;l.href=href;if(ty)l.type=ty;document.head.appendChild(l)}
+ L("manifest",R+"manifest.webmanifest");L("icon",R+"icon-192.png","image/png");L("apple-touch-icon",R+"apple-touch-icon.png");
+ if(f){var t=document.createElement("meta");t.name="apple-mobile-web-app-title";t.content=names[f];document.head.appendChild(t)}
+})();</script><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Schooling</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -451,7 +454,7 @@ async function onUser(u){if(u&&u.isAnonymous)return;fbU=u;if(isOwner()){if(!wind
  try{localStorage.setItem("cbuid",id);localStorage.setItem("cbhad","1")}catch(e){}saveLocal();if(!licOK()){paywall();cstat("A plan is required");return}hideGate();if(isOwner()){setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";render();cstat("👑 Super admin: "+acctShow(u.email))}else{if(PG==="school"){me={role:"t",admin:true};link("a");cls=1;tab="hm";away=false}else me=null;render();cstat(net?"☁ Account: "+acctShow(u.email):"⚠ Offline: kaam local save hota rahega")}if(net&&dirty){lastCloud=lastCloud;push()}if(window.pubSoon)pubSoon();if(window.pullReq)setTimeout(pullReq,3000);if(window.pullWrites)setTimeout(window.pullWrites,4000)}
 function gate(msg){if(PG==="teacher"||PG==="parent"){if(!S.settings)S=norm(JSON.parse(JSON.stringify(DEF)));hideGate();if(!me)render();return}let g=$("gate");if(!g){g=document.createElement("div");g.id="gate";g.style.cssText="position:fixed;inset:0;z-index:200;background:var(--bg,#fff);color:var(--ink,#111);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto";document.body.appendChild(g)}
  g.innerHTML=`<div style="max-width:380px;width:100%"><div style="display:flex;gap:6px;margin-bottom:10px"></div>${PG==="super"?superBox(msg):`<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">🏫 ${esc((S.settings||{}).school||"Schooling")}</div><p class="stat">Sign in to the school account. Your full data is backed up in this account and can be restored on any phone.</p><input id="ge" type="text" inputmode="email" placeholder="School email ya mobile number" autocomplete="username" style="margin:6px 0"><input id="gp" type="password" placeholder="Password (at least 6)" autocomplete="current-password" style="margin:6px 0"><button class="btn" style="width:100%;margin:6px 0" onclick="gAuth(0)">Login</button><p class="stat" style="text-align:center">Logins are created by the admin only. Contact the admin for a new login.</p>${FBCFG?"":`<button class="ghost" style="width:100%;margin-top:6px" onclick="localStorage.removeItem('cbfbcfg');location.reload()">🔧 Testing: bina cloud ke kholein (admin / 1234)</button>`}<p class="err" id="gm" role="alert">${msg||""}</p></div>`}</div></div>`}
-const PG=(new URLSearchParams(location.search).get("p")||(location.pathname.match(/\/(teacher|parent|super)\/$/)||[])[1]||"school").toLowerCase();
+const PG=(new URLSearchParams(location.search).get("p")||(location.pathname.match(/\/(teacher|parent|super)(?:\/(?:index\.html)?)?$/)||[])[1]||"school").toLowerCase();
 let gTab="sch";function gTabSet(k){gTab=k;gate("")}
 function superBox(msg){return `<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">👑 Super admin login</div><p class="stat">Super admin Firebase email and password. This login is separate from the school login.</p><input id="sue" type="email" inputmode="email" placeholder="Super admin email" autocomplete="username" style="margin:6px 0"><input id="sup_pw" type="password" placeholder="Password" autocomplete="current-password" style="margin:6px 0" onkeydown="if(event.key==='Enter')superLogin()"><button class="btn" style="width:100%;margin:6px 0" onclick="superLogin()">Super admin login</button><p class="err" id="gm" role="alert">${msg||""}</p></div>`}
 function logLogin(role){try{const u=fbAuth.currentUser;if(!u)return;fbdb.collection("logins").add({uid:u.uid,email:acctShow(u.email),role,at:firebase.firestore.FieldValue.serverTimestamp(),ua:(navigator.userAgent||"").slice(0,120)}).catch(()=>{})}catch(e){}}
@@ -648,8 +651,24 @@ function apView(){$("sub").textContent="Choose colours and text size";const dp=l
  <div class="card"><div class="name">Text size</div><div class="seg">${pick("n",sz,"cbsize","Normal")}${pick("l",sz,"cbsize","Large")}${pick("x",sz,"cbsize","Extra large")}</div></div>
  ${own}<div class="card"><div class="name">Quick help</div>${help.map(x=>`<p style="margin:6px 0">${x}</p>`).join("")}</div>`}
 function stEditWrap(){return ""}
-function stView(){if(can("st"))return stEdit();$("sub").textContent="Students in your classes";
- return '<input placeholder="Search students" aria-label="Search students" oninput="filt(this.value)" style="margin-bottom:10px">'+(CL().map(s=>`<div class="card row stu" data-n="${esc((s.name+" "+(s.father||"")+" "+(s.phone||"")).toLowerCase())}">${avEd("s",s)}<div style="flex:1"><div class="name">${esc(s.name)}</div><div class="stat">${me.admin||S.settings.showCodes?"ID "+esc(s.user)+", password "+s.code:""}</div>${famInfo(s)}</div></div>`).join("")||'<p class="sub">No students in this class.</p>')}
+/* ---- Student search template: students stay hidden until someone searches ---- */
+let stQ="",stM="all",stKind="v";
+const STM=[["all","All"],["name","Name"],["reg","Register no."],["fat","Father name"]];
+const stPool=()=>S.students.filter(s=>!me||me.role!=="t"||inMy(s.id));
+function stMatch(s,q,m){const nm=(s.name||"").toLowerCase(),fa=(s.father||"").toLowerCase(),rl=String(s.roll==null?"":s.roll).toLowerCase(),id=String(s.user||"").toLowerCase(),ph=String(s.phone||"");
+ if(m==="name")return nm.includes(q);if(m==="fat")return fa.includes(q);if(m==="reg")return rl===q||id.includes(q);
+ return nm.includes(q)||fa.includes(q)||rl===q||id.includes(q)||ph.includes(q)}
+function stCardV(s){return `<div class="card row stu">${avEd("s",s)}<div style="flex:1"><div class="name">${esc(s.name)}</div><div class="stat">Class ${esc(s.cls)}-${esc(s.sec||"A")} · Roll ${esc(s.roll||"-")}</div><div class="stat">${me.admin||S.settings.showCodes?"ID "+esc(s.user)+", password "+s.code:""}</div>${famInfo(s)}</div></div>`}
+function stCardE(s){return `<div class="card row"><div><div class="name stu">${avEd("s",s)}${esc(s.name)}</div><div class="stat">Class ${esc(s.cls)}-${esc(s.sec||"A")} · Roll ${esc(s.roll||"-")}${s.father?" · Father: "+esc(s.father):""}</div><div class="stat">${me.admin||S.settings.showCodes?"ID "+esc(s.user)+", password "+s.code:""}</div></div><select aria-label="Change class" style="width:auto" onchange="moveStu('${s.id}',this.value)">${clsOpts(s.cls)}</select><button class="ghost" onclick="removeStudent('${s.id}')">${pend===s.id?"Tap again to remove":"Remove"}</button>${detailsEd(s)}</div>`}
+function stRes(){const q=stQ.trim().toLowerCase();
+ if(!q)return '<div class="card" style="text-align:center;padding:26px 14px"><div style="font-size:2rem">🔎</div><p class="stat" style="margin:6px 0 0">Students are hidden. Search above to see a student.<br>Naam, register number ya father ka naam likhein.</p></div>';
+ const L=stPool().filter(x=>stMatch(x,q,stM)).sort((a,b)=>a.cls-b.cls||(a.sec||"A").localeCompare(b.sec||"A")||(+a.roll||0)-(+b.roll||0));
+ if(!L.length)return '<div class="card stat" style="text-align:center">No student found. Check the spelling or try another search type.</div>';
+ return `<p class="stat" style="margin:0 0 8px">${L.length} found${L.length>30?" (showing 30, type more to narrow)":""}</p>`+L.slice(0,30).map(stKind==="e"?stCardE:stCardV).join("")}
+window.stSrch=v=>{stQ=v;const r=$("stres");if(r)r.innerHTML=stRes()};
+window.stMode=m=>{stM=m;document.querySelectorAll("#stm .pick").forEach(b=>b.classList.toggle("on",b.dataset.m===m));const r=$("stres");if(r)r.innerHTML=stRes();const i=$("stq");if(i)i.focus()};
+function stBox(){return `<div class="card" style="margin-bottom:10px"><div class="name">🔎 Find a student</div><p class="stat">Search by name, register number or father's name.</p><input id="stq" type="search" placeholder="Type to search..." aria-label="Search students" value="${esc(stQ)}" oninput="stSrch(this.value)" autocomplete="off" style="margin:8px 0"><div class="seg" id="stm">${STM.map(([k,l])=>`<button class="pick ${stM===k?"on":""}" data-m="${k}" onclick="stMode('${k}')">${l}</button>`).join("")}</div></div><div id="stres">${stRes()}</div>`}
+function stView(){if(can("st"))return stEdit();$("sub").textContent="Search a student";stKind="v";return stBox()}
 let vid=null,isOwn=false,away=false;
 const LBL={P:"PRESENT",A:"ABSENT",L:"ON LEAVE",T:"LATE"};
 async function ident(){try{const u=null;if(u){isOwn=await u.isOwner();vid=await u.id()}}catch(e){}}
@@ -896,9 +915,8 @@ function msView(){const t=me.role==="t";if(t&&!(stu(thread)&&inMy(thread)))threa
  return (t?`<select id="tsel" aria-label="Student" style="margin-bottom:10px" onchange="thread=this.value;render()">${MY().map(s=>`<option value="${s.id}" ${s.id===sid?"selected":""}>${esc(s.name)}</option>`).join("")}</select>`:"")+
  `<div class="card">${S.msgs.filter(m=>m.sid===sid).map(m=>`<div class="msg ${m.from==="t"?"t":"p"}"><div class="stat" style="color:inherit;opacity:.8">${m.from==="t"?"Teacher":"Family"}</div>${esc(m.text)}</div>`).join("")||`<span class="stat">No messages yet. Say hello below.</span>`}</div>
  ${me.role!=="t"&&!S.settings.allowMsg?'<p class="sub">Messaging is turned off by the school.</p>':`<div class="add"><input id="mtext" placeholder="Write a message" aria-label="Message" onkeydown="if(event.key==='Enter')send()"><button class="btn" onclick="send()">Send</button></div>`}`}
-function stEdit(){$("sub").textContent="Give each family their ID number and password";
- return `<input placeholder="Search students" aria-label="Search students" oninput="filt(this.value)" style="margin-bottom:10px"><div class="add"><input id="newname" placeholder="Student name" aria-label="Student name"><input id="newfee" type="number" min="0" placeholder="Fee" style="max-width:90px" aria-label="Total fee"><button class="btn" onclick="addStudent()">Add</button></div><details style="margin-bottom:12px"><summary class="stat" style="cursor:pointer">Add father name, phone and address (optional)</summary><input id="newfather" placeholder="Father's name" aria-label="Father name" style="margin-top:8px"><input id="newphone" type="tel" inputmode="tel" placeholder="Contact number" aria-label="Contact number" style="margin-top:8px"><input id="newaddr" placeholder="Home address" aria-label="Home address" style="margin-top:8px"></details>`+
- CL().map(s=>`<div class="card row" data-n="${esc((s.name+" "+(s.father||"")+" "+(s.phone||"")).toLowerCase())}"><div><div class="name stu">${avEd("s",s)}${esc(s.name)}</div><div class="stat">${me.admin||S.settings.showCodes?"ID "+esc(s.user)+", password "+s.code:""}</div></div><select aria-label="Change class" style="width:auto" onchange="moveStu('${s.id}',this.value)">${clsOpts(s.cls)}</select><button class="ghost" onclick="removeStudent('${s.id}')">${pend===s.id?"Tap again to remove":"Remove"}</button>${detailsEd(s)}</div>`).join("")+
+function stEdit(){$("sub").textContent="Search a student";stKind="e";
+ return stBox()+`<div class="add"><input id="newname" placeholder="Student name" aria-label="Student name"><input id="newfee" type="number" min="0" placeholder="Fee" style="max-width:90px" aria-label="Total fee"><button class="btn" onclick="addStudent()">Add</button></div><details style="margin-bottom:12px"><summary class="stat" style="cursor:pointer">Add father name, phone and address (optional)</summary><input id="newfather" placeholder="Father's name" aria-label="Father name" style="margin-top:8px"><input id="newphone" type="tel" inputmode="tel" placeholder="Contact number" aria-label="Contact number" style="margin-top:8px"><input id="newaddr" placeholder="Home address" aria-label="Home address" style="margin-top:8px"></details>`+
  `<details class="card"><summary class="name">Add many students</summary><p class="stat">One per line: name, fee, father, phone, address</p><textarea id="bulk" rows="4" aria-label="Students list" style="width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--card);color:var(--ink)"></textarea><button class="btn" style="width:100%;margin-top:8px" onclick="addBulk()">Add to Class ${cls}</button></details>
  <button class="btn" onclick="csv()" style="width:100%">Download class report (CSV)</button>`}
 function ttView(){const t=me.role==="t",c=t?cls:(stu(me.sid)||{}).cls;$("sub").textContent="Class "+c+" weekly timetable";
@@ -967,7 +985,7 @@ addEventListener("pagehide",()=>{try{commit(false)}catch(e){}});document.addEven
 setInterval(()=>{try{if(me)commit(false)}catch(e){}},60000);
 if(Array.isArray(CB))CB.push("gd");
 acctStart();init();setTimeout(()=>{try{if(autoCharge())commit(false)}catch(e){}},600);setInterval(()=>{try{if(autoCharge())commit(false)}catch(e){}},3600000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)billTick()});
-if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register(/\/(teacher|parent|super)\/$/.test(location.pathname)?"../sw.js":"sw.js").catch(()=>{}));
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register((window.__RD||"")+"sw.js").catch(()=>{}));
 addEventListener("load",()=>{try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}});
 </script>
 <style id="v2css">
