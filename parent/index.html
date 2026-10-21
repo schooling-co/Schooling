@@ -436,22 +436,80 @@ function loadScr(u){return new Promise((ok,no)=>{const s=document.createElement(
 let fbErr="";async function fbBoot(){if(fbdb)return true;const c=fbCfg();if(!c)return false;const B="https://www.gstatic.com/firebasejs/10.12.2/";try{if(!window.firebase){await loadScr(B+"firebase-app-compat.js");await Promise.all([loadScr(B+"firebase-auth-compat.js"),loadScr(B+"firebase-firestore-compat.js")])}if(!firebase.apps.length)firebase.initializeApp(c);fbAuth=firebase.auth();fbdb=firebase.firestore();return true}catch(e){fbErr=(e&&e.message)||"script did not load";return false}}
 const cdoc=(u,id)=>fbdb.collection("schools").doc(u).collection("cur").doc(id);
 const sdoc=(u,id)=>fbdb.collection("schools").doc(u).collection("snap").doc(id);
-async function writeSet(mk,str,u){const n=Math.max(1,Math.ceil(str.length/CH)),b=fbdb.batch();b.set(mk(u,"m"),{n,u,ts:Date.now()});for(let i=0;i<n;i++)b.set(mk(u,"c"+i),{s:str.slice(i*CH,(i+1)*CH)});await b.commit();return n}
-async function readSet(mk,u,pre){const m=await mk(u,pre+"m").get();if(!m.exists)return null;const n=m.data().n,ds=await Promise.all(Array.from({length:n},(_,i)=>mk(u,pre+"c"+i).get()));return{u:m.data().u,str:ds.map(d=>d.data().s).join("")}}
+/* ===== cloud sync core: compressed copy, version-checked saves, merge with other devices ===== */
+const CZ=()=>typeof CompressionStream==="function"&&typeof DecompressionStream==="function";
+const toB64=u8=>new Promise((ok,no)=>{const f=new FileReader();f.onload=()=>{const r=String(f.result);ok(r.slice(r.indexOf(",")+1))};f.onerror=no;f.readAsDataURL(new Blob([u8]))});
+const fromB64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+async function zipStr(str){const cs=new CompressionStream("gzip"),w=cs.writable.getWriter();w.write(new TextEncoder().encode(str));w.close();return toB64(new Uint8Array(await new Response(cs.readable).arrayBuffer()))}
+async function unzipStr(b){const ds=new DecompressionStream("gzip"),w=ds.writable.getWriter();w.write(fromB64(b));w.close();return await new Response(ds.readable).text()}
+async function packStr(str){if(CZ()){try{const z=await zipStr(str);if(z.length<str.length)return{z:1,s:z}}catch(e){}}return{z:0,s:str}}
+async function writeSet(mk,str,u){const p=await packStr(str),n=Math.max(1,Math.ceil(p.s.length/CH)),b=fbdb.batch();b.set(mk(u,"m"),{n,u,ts:Date.now(),z:p.z});for(let i=0;i<n;i++)b.set(mk(u,"c"+i),{s:p.s.slice(i*CH,(i+1)*CH)});await b.commit();return n}
+async function readSet(mk,u,pre){for(let t=0;t<3;t++){const m=await mk(u,pre+"m").get();if(!m.exists)return null;const md=m.data(),n=md.n,rv=md.rev||0,ds=await Promise.all(Array.from({length:n},(_,i)=>mk(u,pre+"c"+i).get()));if(rv&&ds.some(d=>((d.data()||{}).rev||0)!==rv))continue;let str=ds.map(d=>d.data().s).join("");if(md.z){if(!CZ()){const e=new Error("This browser is too old to open the school data. Please update Chrome or Safari.");e.fatal=true;throw e}try{str=await unzipStr(str)}catch(x){const e=new Error("The school data could not be opened. Please try again.");e.fatal=true;throw e}}return{u:md.u,str,n,rev:rv,ts:md.ts||0}}throw new Error("The data is changing. Try again.")}
 const cpl=()=>JSON.stringify({S,PH,u:S.__u||0});
-async function push(){if(!fbU||!fbdb||!dirty&&lastCloud)return;const u=window.SUPSCHOOL?window.SUPSCHOOL.uid:fbU.uid,str=cpl();if(str.length/1048576>quotaMB()){cstat("⚠ Cloud storage is full. Please upgrade your plan.");return}try{
+const JS=JSON.stringify,isO=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
+/* 3-way merge of two edited copies of the school data, base = last version both saw. Records are matched by id. */
+function m3(b,m,t){
+ if(JS(m)===JS(b))return t;
+ if(JS(t)===JS(b)||JS(t)===JS(m))return m;
+ if(isO(m)&&isO(t)){const bb=isO(b)?b:{},o={};
+  for(const k of new Set([...Object.keys(m),...Object.keys(t)])){const iM=k in m,iT=k in t,iB=k in bb;
+   if(iM&&iT)o[k]=m3(bb[k],m[k],t[k]);
+   else if(iM){if(!iB||JS(m[k])!==JS(bb[k]))o[k]=m[k]}
+   else{if(!iB||JS(t[k])!==JS(bb[k]))o[k]=t[k]}}
+  return o}
+ if(Array.isArray(m)&&Array.isArray(t))return m3arr(Array.isArray(b)?b:[],m,t);
+ return m}
+function m3arr(b,m,t){
+ const ided=a=>a.every(x=>isO(x)&&typeof x.id==="string"&&x.id);
+ if(ided(b)&&ided(m)&&ided(t)){const mp=a=>new Map(a.map(x=>[x.id,x])),bm=mp(b),mm=mp(m),tm=mp(t),o=[];
+  for(const id of new Set([...t.map(x=>x.id),...m.map(x=>x.id)])){const iB=bm.has(id),iM=mm.has(id),iT=tm.has(id);
+   if(iM&&iT)o.push(m3(bm.get(id),mm.get(id),tm.get(id)));
+   else if(iM){if(!iB||JS(mm.get(id))!==JS(bm.get(id)))o.push(mm.get(id))}
+   else if(iT){if(!iB||JS(tm.get(id))!==JS(bm.get(id)))o.push(tm.get(id))}}
+  return o}
+ const cnt=a=>{const c=new Map();a.forEach(x=>{const k=JS(x);c.set(k,(c.get(k)||0)+1)});return c},cb=cnt(b),cm=cnt(m),ct=cnt(t),rem=new Map();
+ new Set([...cb.keys(),...cm.keys(),...ct.keys()]).forEach(k=>rem.set(k,(ct.get(k)||0)+(cm.get(k)||0)-(cb.get(k)||0)));
+ const o=[];[...t,...m].forEach(x=>{const k=JS(x),r=rem.get(k)||0;if(r>0){o.push(x);rem.set(k,r-1)}});return o}
+/* two devices may both add the same month's fee; keep one */
+function fixMerged(){try{S.students.forEach(s=>{if(!Array.isArray(s.ch))return;const seen=new Set();s.ch=s.ch.filter(c=>{if(c&&c.k==="mo"){if(seen.has(c.m))return false;seen.add(c.m)}return true})});autoCharge()}catch(e){}}
+let curRev=0,chg=0,pushP=null,pushAgain=false,syncP=null,syncT=0,snapRev=0,unwatchFn=null;
+async function writeCur(u,str){const p=await packStr(str),n=Math.max(1,Math.ceil(p.s.length/CH)),mref=cdoc(u,"m"),clash=()=>{const e=new Error("conflict");e.conflict=true;return e};let rev=0;
+ if(n>20){const m=await mref.get();if((m.exists?(m.data().rev||0):0)!==curRev)throw clash();rev=curRev+1;const b=fbdb.batch();b.set(mref,{n,u,ts:Date.now(),z:p.z,rev});for(let i=0;i<n;i++)b.set(cdoc(u,"c"+i),{s:p.s.slice(i*CH,(i+1)*CH),rev});await b.commit()}
+ else await fbdb.runTransaction(async t=>{const m=await t.get(mref),r=m.exists?(m.data().rev||0):0;if(r!==curRev)throw clash();rev=r+1;t.set(mref,{n,u,ts:Date.now(),z:p.z,rev});for(let i=0;i<n;i++)t.set(cdoc(u,"c"+i),{s:p.s.slice(i*CH,(i+1)*CH),rev})});
+ curRev=rev;return n}
+const typing=()=>{const a=document.activeElement;return !!a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)};
+function remoteApplied(msg){try{saveLocal()}catch(e){}if(typing())window._rrPend=1;else{try{render()}catch(e){}}if(window.toast)toast(msg,2500)}
+document.addEventListener("focusout",()=>{if(window._rrPend)setTimeout(()=>{if(window._rrPend&&!typing()){window._rrPend=0;try{render()}catch(e){}}},400)});
+async function syncOnce(){
+ if(!fbU||!fbdb||window.RO||(isOwner()&&!window.SUPSCHOOL))return;
+ const u=window.SUPSCHOOL?window.SUPSCHOOL.uid:fbU.uid,r=await readSet((a,x)=>cdoc(a,x),u,"");
+ if(!r||r.rev===curRev)return;
+ const th=JSON.parse(r.str);if(!th||!th.S)return;
+ const was=dirty;
+ if(!was){S=norm(th.S);PH=th.PH||{}}
+ else{let b={};try{b=JSON.parse(lastCloud)||{}}catch(e){}const keep=S.__u||0;S=norm(m3(b.S||{},S,th.S));PH=m3(b.PH||{},PH,th.PH||{});S.__u=Math.max(keep,th.S.__u||0,Date.now());fixMerged()}
+ lastCloud=r.str;lastN=r.n;curRev=r.rev;
+ remoteApplied(was?"Merged changes from another device":"Updated from another device");
+ if(was)pushSoon()}
+function syncCloud(){if(syncP)return syncP;syncP=syncOnce().catch(()=>{}).finally(()=>{syncP=null});return syncP}
+function unwatchCloud(){try{if(unwatchFn)unwatchFn()}catch(e){}unwatchFn=null;clearTimeout(syncT)}
+function watchCloud(u){unwatchCloud();try{unwatchFn=cdoc(u,"m").onSnapshot(sn=>{if(!sn.exists||sn.metadata.hasPendingWrites)return;snapRev=sn.data().rev||0;if(snapRev!==curRev){clearTimeout(syncT);syncT=setTimeout(()=>{if(snapRev!==curRev)syncCloud()},1500)}},()=>{})}catch(e){}}
+function push(){if(!fbU||!fbdb||!dirty&&lastCloud)return Promise.resolve();if(pushP){pushAgain=true;return pushP}pushP=(async()=>{try{do{pushAgain=false;await push0()}while(pushAgain&&dirty)}finally{pushP=null}})();return pushP}
+async function push0(){const u=window.SUPSCHOOL?window.SUPSCHOOL.uid:fbU.uid;let str=cpl(),c0=chg;if(str.length/1048576>quotaMB()){cstat("⚠ Cloud storage is full. Please upgrade your plan.");return}try{
  const day=dayOf();if(lastCloud&&lsGet("cbsnap@"+u)!==day){const sm=(a,id)=>fbdb.collection("schools").doc(a).collection("snap").doc(day+"_"+id);await writeSet((a,id)=>sm(a,id),lastCloud,u);try{localStorage.setItem("cbsnap@"+u,day)}catch(e){}
   const q=await fbdb.collection("schools").doc(u).collection("snap").get(),old=[...new Set(q.docs.map(d=>d.id.split("_")[0]))].sort().slice(0,-7);for(const d of q.docs)if(old.includes(d.id.split("_")[0]))d.ref.delete()}
- const n=await writeSet((a,id)=>cdoc(a,id),str,u);for(let i=n;i<lastN;i++)cdoc(u,"c"+i).delete().catch(()=>{});lastN=n;lastCloud=str;dirty=false;try{localStorage.setItem("cb_last",String(Date.now()))}catch(e){}if(window.SUPSCHOOL)window.SUPSCHOOL.pushes++;cstat("☁ Backed up "+new Date().toTimeString().slice(0,5))}catch(e){dirty=true;cstat("⚠ Backup pending (internet?)")}}
-function pushSoon(){if(!fbU)return;dirty=true;clearTimeout(pushT);pushT=setTimeout(push,4000);if(window.pubSoon)pubSoon()}
+  let n;for(let k=0;;k++){c0=chg;str=cpl();try{n=await writeCur(u,str);break}catch(e){if(e&&e.conflict&&k<3){await syncCloud();continue}throw e}}
+ for(let i=n;i<lastN;i++)cdoc(u,"c"+i).delete().catch(()=>{});lastN=n;lastCloud=str;if(chg===c0)dirty=false;try{localStorage.setItem("cb_last",String(Date.now()))}catch(e){}if(window.SUPSCHOOL)window.SUPSCHOOL.pushes++;cstat("☁ Backed up "+new Date().toTimeString().slice(0,5))}catch(e){dirty=true;cstat("⚠ Backup pending (internet?)");clearTimeout(pushT);pushT=setTimeout(push,60000)}}
+function pushSoon(){if(!fbU)return;dirty=true;chg++;clearTimeout(pushT);pushT=setTimeout(push,4000);if(window.pubSoon)pubSoon()}
 function freshS(){S=norm(JSON.parse(JSON.stringify(DEF)));PH={}}
 function saveLocal(){if(window.RO||window.SUPSCHOOL)return;try{localStorage.setItem("cb2",JSON.stringify(S));localStorage.setItem("cbph",JSON.stringify(PH))}catch(e){}}
 async function onUser(u){if(u&&u.isAnonymous)return;fbU=u;if(isOwner()){if(!window._supFresh){gTab="sup";await fbAuth.signOut();setTimeout(()=>gate(PG==="super"?"Super admin: enter the email and password again.":"For super admin, open the super admin link."),0);return}freshS();setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";hideGate();render();cstat("👑 Super admin: "+acctShow(u.email));return}if(PG==="super"){fbU=null;try{await fbAuth.signOut()}catch(e){}gate("");return}const id=u.uid,prev=lsGet("cbuid");let cloud=null,net=true;const rsP=readSet((a,x)=>cdoc(a,x),id,"").then(r=>({r}),e=>({e}));await licLoad(u);
- try{const rr=await rsP;if(rr.e)throw rr.e;const r=rr.r;if(r){cloud=JSON.parse(r.str);lastCloud=r.str;lastN=Math.ceil(r.str.length/CH)}}catch(e){net=false}
+ try{const rr=await rsP;if(rr.e)throw rr.e;const r=rr.r;if(r){cloud=JSON.parse(r.str);lastCloud=r.str;lastN=r.n;curRev=r.rev}else{curRev=0;lastCloud="";lastN=0}}catch(e){if(e&&e.fatal){gate(e.message);return}net=false}
  if(net){try{localStorage.setItem("cb_last",String(Date.now()))}catch(e){}}else{const lo=+(lsGet("cb_last")||0);if(lo&&Date.now()-lo>48*3600e3){gate("48 ghante se internet nahi mila. Internet chalu karke dobara login karein.");return}}
- let loc=null;if(prev===id)loc={S,PH,u:S.__u||0};else{try{if(prev){localStorage.setItem("cb2@"+prev,cpl())}const r=lsGet("cb2@"+id);if(r)loc=JSON.parse(r);else if(!lsGet("cbhad"))loc={S,PH,u:S.__u||1}}catch(e){}}
+ let loc=null,real=prev===id;if(prev===id)loc={S,PH,u:S.__u||0};else{try{if(prev){localStorage.setItem("cb2@"+prev,cpl())}const r=lsGet("cb2@"+id);if(r){loc=JSON.parse(r);real=true}else if(!lsGet("cbhad"))loc={S,PH,u:S.__u||1}}catch(e){}}
+ if(!net&&!real){gate("Server se school ka data nahi mil saka. Internet check karke dobara login karein.");return}
  if(cloud&&(!loc||(cloud.u||0)>(loc.u||0))){S=norm(cloud.S);PH=cloud.PH||{}}else if(loc){S=norm(loc.S);PH=loc.PH||{};if(net)dirty=true}else{freshS();dirty=true}
- try{localStorage.setItem("cbuid",id);localStorage.setItem("cbhad","1")}catch(e){}saveLocal();if(!licOK()){paywall();cstat("A plan is required");return}hideGate();if(isOwner()){setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";render();cstat("👑 Super admin: "+acctShow(u.email))}else{if(PG==="school"){me={role:"t",admin:true};link("a");cls=1;tab="hm";away=false}else me=null;render();cstat(net?"☁ Account: "+acctShow(u.email):"⚠ Offline: kaam local save hota rahega")}if(net&&dirty){lastCloud=lastCloud;push()}if(window.pubSoon)pubSoon();if(window.pullReq)setTimeout(pullReq,3000);if(window.pullWrites)setTimeout(window.pullWrites,4000)}
+ try{localStorage.setItem("cbuid",id);localStorage.setItem("cbhad","1")}catch(e){}saveLocal();if(!licOK()){paywall();cstat("A plan is required");return}hideGate();if(isOwner()){setSup(true);me={role:"t",admin:true,sup:true};cls=1;tab="sa";render();cstat("👑 Super admin: "+acctShow(u.email))}else{if(PG==="school"){me={role:"t",admin:true};link("a");cls=1;tab="hm";away=false}else me=null;render();cstat(net?"☁ Account: "+acctShow(u.email):"⚠ Offline: kaam local save hota rahega")}if(net&&!isOwner())watchCloud(id);if(net&&dirty){lastCloud=lastCloud;push()}if(window.pubSoon)pubSoon();if(window.pullReq)setTimeout(pullReq,3000);if(window.pullWrites)setTimeout(window.pullWrites,4000)}
 function gate(msg){if(PG==="teacher"||PG==="parent"){if(!S.settings)S=norm(JSON.parse(JSON.stringify(DEF)));hideGate();if(!me)render();return}let g=$("gate");if(!g){g=document.createElement("div");g.id="gate";g.style.cssText="position:fixed;inset:0;z-index:200;background:var(--bg,#fff);color:var(--ink,#111);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto";document.body.appendChild(g)}
  g.innerHTML=`<div style="max-width:380px;width:100%"><div style="display:flex;gap:6px;margin-bottom:10px"></div>${PG==="super"?superBox(msg):`<div class="card" style="width:100%"><div class="name" style="font-size:1.3rem">🏫 ${esc((S.settings||{}).school||"Schooling")}</div><p class="stat">Sign in to the school account. Your full data is backed up in this account and can be restored on any phone.</p><input id="ge" type="text" inputmode="email" placeholder="School email ya mobile number" autocomplete="username" style="margin:6px 0"><input id="gp" type="password" placeholder="Password (at least 6)" autocomplete="current-password" style="margin:6px 0"><button class="btn" style="width:100%;margin:6px 0" onclick="gAuth(0)">Login</button><p class="stat" style="text-align:center">Logins are created by the admin only. Contact the admin for a new login.</p>${FBCFG?"":`<button class="ghost" style="width:100%;margin-top:6px" onclick="localStorage.removeItem('cbfbcfg');location.reload()">🔧 Testing: bina cloud ke kholein (admin / 1234)</button>`}<p class="err" id="gm" role="alert">${msg||""}</p></div>`}</div></div>`}
 const PG=(new URLSearchParams(location.search).get("p")||(location.pathname.match(/\/(teacher|parent|super)(?:\/(?:index\.html)?)?$/)||[])[1]||"school").toLowerCase();
@@ -468,12 +526,12 @@ async function gReset(){const e=acctId($("ge").value),m=$("gm");if(!e){m.textCon
 async function acctStart(){if(!cloudOn())return;gate("Checking account...");if(!await fbBoot()){const id=lsGet("cbuid");if(id){hideGate();cstat("⚠ Offline: kaam local save hota rahega");return}gate("The first login needs internet.");return}
  try{await fbAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION)}catch(e){}
  fbAuth.onAuthStateChanged(u=>{if(u)onUser(u);else{fbU=null;gate("")}})}
-async function acctOut(){if(!fbU&&!isAd())return;if(!confirm("Sign out of the school account? Data will be removed from this phone (it stays safe in the cloud)."))return;try{await push()}catch(e){}try{if(fbU)localStorage.setItem("cb2@"+fbU.uid,cpl());localStorage.removeItem("cb2");localStorage.removeItem("cbph");localStorage.removeItem("cbuid")}catch(e){}fbU=null;try{await fbAuth.signOut()}catch(e){}freshS();me=null;lastCloud="";gate("")}
+async function acctOut(){if(!fbU&&!isAd())return;if(!confirm("Sign out of the school account? Data will be removed from this phone (it stays safe in the cloud)."))return;try{await push()}catch(e){}unwatchCloud();try{if(fbU)localStorage.setItem("cb2@"+fbU.uid,cpl());localStorage.removeItem("cb2");localStorage.removeItem("cbph");localStorage.removeItem("cbuid")}catch(e){}fbU=null;try{await fbAuth.signOut()}catch(e){}freshS();me=null;lastCloud="";curRev=0;gate("")}
 async function snapsLoad(){const el=$("snaps");if(!el||!fbU)return;try{const q=await fbdb.collection("schools").doc(fbU.uid).collection("snap").get(),ds=q.docs.map(d=>d.id).filter(x=>x.endsWith("_m")).map(x=>x.slice(0,10)).sort().reverse();el.innerHTML=ds.length?ds.map(d=>`<option>${d}</option>`).join(""):"<option value=''>No older version yet</option>"}catch(e){el.innerHTML="<option value=''>Could not load</option>"}}
 async function restoreSnap(){const d=$("snaps").value;if(!d||!isAd()||!confirm(d+" ? Current data is already kept safely in the backup."))return;await push();try{const r=await readSet((a,id)=>fbdb.collection("schools").doc(a).collection("snap").doc(id),fbU.uid,d+"_");if(!r){alert("This version was not found.");return}const o=JSON.parse(r.str);S=norm(o.S);PH=o.PH||{};S.__u=Date.now();lastCloud=lastCloud;saveLocal();dirty=true;push();render()}catch(e){alert("Could not restore.")}}
 function saveFbCfg(){const t=$("fbc").value.trim();try{const o=JSON.parse(t.replace(/^[^{]*/,"").replace(/;?\s*$/,"").replace(/([{,]\s*)([A-Za-z_]+)\s*:/g,'$1"$2":').replace(/'/g,'"'));if(!o.apiKey||!o.projectId)throw 0;localStorage.setItem("cbfbcfg",JSON.stringify(o));location.reload()}catch(e){alert("Invalid config. Paste the full Firebase config.")}}
 function cloudCard(){if(!isAd())return"";if(!cloudOn())return"";if(0)return `<details class="card"><summary class="name" style="cursor:pointer">☁ School account + auto backup (setup)</summary><p class="stat">Paste the Firebase firebaseConfig here once (see SETUP-FIREBASE.txt for steps). After that each school gets its own account and automatic backup.</p><textarea id="fbc" rows="5" style="width:100%;font:inherit;border:2px solid var(--line);border-radius:12px;padding:8px;background:var(--card);color:var(--ink)" placeholder="{ apiKey: '...', authDomain: '...', projectId: '...' }"></textarea><button class="btn" style="width:100%;margin-top:8px" onclick="saveFbCfg()">Save and enable</button></details>`;
- setTimeout(snapsLoad,50);return `<div class="card"><div class="name">☁ School account &amp; backup</div><p class="stat" id="cst">${esc(cst||"—")}</p><p class="stat">Every change is backed up automatically. A daily old version is kept for 7 days.</p><button class="btn" onclick="dirty=true;lastCloud=lastCloud;push()">Back up now</button> <button class="ghost" onclick="acctOut()">Account logout</button><p class="stat" style="margin-top:10px">Restore older version:</p><select id="snaps" aria-label="Old version"></select> <button class="ghost" onclick="restoreSnap()">Restore</button></div>`}
+ setTimeout(snapsLoad,50);return `<div class="card"><div class="name">☁ School account &amp; backup</div><p class="stat" id="cst">${esc(cst||"—")}</p><p class="stat" id="pst">${esc(window._pubTxt||"")}</p><p class="stat">Every change is backed up automatically. A daily old version is kept for 7 days.</p><button class="btn" onclick="dirty=true;lastCloud=lastCloud;push()">Back up now</button> <button class="ghost" onclick="acctOut()">Account logout</button><p class="stat" style="margin-top:10px">Restore older version:</p><select id="snaps" aria-label="Old version"></select> <button class="ghost" onclick="restoreSnap()">Restore</button></div>`}
 
 // ---- paid plan (licence), 3-section login, owner panel
 const BIZ={quotaMB:1024,trialDays:3,price:"Rs 3,000 per month",pay:"JazzCash / Easypaisa: 03XX-XXXXXXX (write the account name)",owner:""};
@@ -761,9 +819,10 @@ function saveSet(){if(!isAd())return;const st=S.settings,s1=pl("s_sub1"),s2=pl("
  try{localStorage.setItem("cbtheme",$("s_theme").value)}catch(e){}applyTheme();saved=true;norm(S);commit()}
 function promote(){if(!isAd())return;if(pend!=="promo"){pend="promo";render();return}pend=null;S.students.forEach(s=>{if(s.cls<10)s.cls++});commit()}
 
-function stamp(){let b=$("svd");if(!b){b=document.createElement("div");b.id="svd";b.setAttribute("role","status");b.style.cssText="position:fixed;top:6px;right:8px;font-size:.7rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:2px 8px;z-index:40;opacity:.85";document.body.appendChild(b)}try{localStorage.setItem("cb2bak",JSON.stringify(S));b.textContent="✓ Saved "+new Date().toTimeString().slice(0,5)}catch(e){b.textContent="⚠ Storage full: download a backup"}}
-function commit(re=true){if(window.RO){if(window.roCommit&&window.roCommit(re))return;if(window._roSrc)S=window.roBuild();if(window.toast)toast("Read-only on this phone for now. Attendance and marks entry comes in the next update.");if(re)render();return}normUsers(S);autoCharge();S.__u=Date.now();stamp();pushSoon();
- if(ref){ref.set(S).catch(()=>{})}else{try{localStorage.setItem("cb2",JSON.stringify(S))}catch(e){}}
+function stamp(ok){let b=$("svd");if(!b){b=document.createElement("div");b.id="svd";b.setAttribute("role","status");b.style.cssText="position:fixed;top:6px;right:8px;font-size:.7rem;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:2px 8px;z-index:40;opacity:.85";document.body.appendChild(b);try{localStorage.removeItem("cb2bak")}catch(e){}}b.textContent=ok===false?"⚠ Storage full: download a backup":"✓ Saved "+new Date().toTimeString().slice(0,5)}
+function commit(re=true){if(window.RO){if(window.roCommit&&window.roCommit(re))return;if(window._roSrc)S=window.roBuild();if(window.toast)toast("Read-only on this phone for now. Attendance and marks entry comes in the next update.");if(re)render();return}normUsers(S);autoCharge();S.__u=Date.now();pushSoon();let lok=true;
+ if(ref){ref.set(S).catch(()=>{})}else{try{localStorage.setItem("cb2",JSON.stringify(S))}catch(e){lok=false}}
+ stamp(lok);
  if(re)render();
 }
 async function init(){norm(S);try{PH=JSON.parse(localStorage.getItem("cbph")||"{}")}catch(e){}applyTheme();["click","keydown","touchstart"].forEach(e=>document.addEventListener&&document.addEventListener(e,()=>{lastAct=Date.now()}));setInterval(refreshDue,15000);setInterval(()=>{const m=S.settings.idle;if(me&&m>0&&Date.now()-lastAct>m*6e4)logout()},15000);
@@ -981,7 +1040,7 @@ function render(){applyTheme();crest();refreshDue();$("dash").style.display=(me&
  if($("s_theme"))try{$("s_theme").value=localStorage.getItem("cbtheme")||"auto"}catch(e){}
  if(keep!==null&&$("mtext")){$("mtext").value=keep;$("mtext").focus()}
 }
-addEventListener("pagehide",()=>{try{commit(false)}catch(e){}});document.addEventListener("visibilitychange",()=>{if(document.hidden)try{commit(false)}catch(e){}});
+const flushNow=()=>{try{saveLocal();if(dirty&&fbU){clearTimeout(pushT);push()}}catch(e){}};addEventListener("pagehide",flushNow);document.addEventListener("visibilitychange",()=>{if(document.hidden)flushNow();else try{if(fbU&&window.pubSoon)pubSoon();if(window.pullReq)pullReq();if(window.pullWrites)pullWrites()}catch(e){}});
 setInterval(()=>{try{if(me)commit(false)}catch(e){}},60000);
 if(Array.isArray(CB))CB.push("gd");
 acctStart();init();setTimeout(()=>{try{if(autoCharge())commit(false)}catch(e){}},600);setInterval(()=>{try{if(autoCharge())commit(false)}catch(e){}},3600000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)billTick()});
@@ -1610,7 +1669,7 @@ window.saveAR=function(){if(!isAd())return;const a=Math.max(0,Math.min(23,+docum
 let le=0;const oops=()=>{if(Date.now()-le<5000)return;le=Date.now();try{toast("Something went wrong. Your data is safe. Reload if the screen looks wrong.")}catch(_){}};
 addEventListener("error",oops);addEventListener("unhandledrejection",oops);
 const chip=document.createElement("div");chip.style.cssText="position:fixed;left:8px;top:6px;z-index:60;font-size:.7rem;background:#f59e0b;color:#000;border-radius:10px;padding:2px 8px;display:none";chip.textContent="⚠ Offline: saved on this device";document.body.appendChild(chip);
-const net=()=>{chip.style.display=navigator.onLine?"none":"block"};addEventListener("offline",net);addEventListener("online",()=>{net();try{if(typeof pushSoon==="function")pushSoon()}catch(e){}});net();
+const net=()=>{chip.style.display=navigator.onLine?"none":"block"};addEventListener("offline",net);addEventListener("online",()=>{net();try{if(dirty&&typeof pushSoon==="function")pushSoon()}catch(e){}});net();
 const r9=window.render;window.render=function(){const r=r9.apply(this,arguments);try{ensureRolls();pinGate()}catch(e){}return r};
 try{ensureRolls();pinGate()}catch(e){}
 })();
@@ -2685,40 +2744,51 @@ async function delChunks(ref,n){for(let i=0;i<(n||0);i++)await ref.collection("c
 async function delPacked(ref,n){await delChunks(ref,n);await ref.delete().catch(()=>{})}
 let pubBusy=false,pubT=null;
 window.pubSoon=function(){if(!fbU||window.RO||(isOwner()&&!window.SUPSCHOOL))return;clearTimeout(pubT);pubT=setTimeout(publishLogins,6000)};
+function setPub(t){window._pubTxt=t;const e=document.getElementById("pst");if(e)e.textContent=t}
 async function publishLogins(){
  if(pubBusy){clearTimeout(pubT);pubT=setTimeout(publishLogins,3000);return}
  if(!fbU||!fbdb||window.RO||(isOwner()&&!window.SUPSCHOOL))return;
- pubBusy=true;const uid=window.SUPSCHOOL?window.SUPSCHOOL.uid:fbU.uid,idx=S.logidx=S.logidx||{};let changed=false,ok=0,short=0,clash=0;
+ pubBusy=true;const uid=window.SUPSCHOOL?window.SUPSCHOOL.uid:fbU.uid,idx=S.logidx=S.logidx||{};let changed=false,ok=0,short=0,clash=0,fail=0,wrote=0,abort=false,lastErr=null;
  try{
   const common=JSON.stringify(commonSlice()),ch=hsh(common);
   if(idx.__c!==ch){const shRef=fbdb.collection("phoneshared").doc(uid);await delChunks(shRef,idx.__n);idx.__n=await putPacked(shRef,common,null);idx.__c=ch;changed=true}
   const want={};
   S.teachers.forEach(t=>{if(!t.off&&t.pin)want["t:"+t.id]={code:String(t.pin),role:"t",pid:t.id}});
   S.students.forEach(s=>{if(s.code)want["c:"+s.id]={code:String(s.code),role:"p",pid:s.id};if(s.pcode)want["q:"+s.id]={code:String(s.pcode),role:"p",pid:s.id}});
-  const keys=new Set([...Object.keys(want),...Object.keys(idx).filter(k=>!k.startsWith("__"))]);
+  const keys=[...new Set([...Object.keys(want),...Object.keys(idx).filter(k=>!k.startsWith("__"))])],jobs=[];let cpu=0;
+  /* step 1: work out which phones need new data (the screen gets a breath every 20 people) */
   for(const k of keys){
-   const w=want[k],old=idx[k];
-   let pl=null,pub=!!w;
+   const w=want[k],old=idx[k];let pl=null,pub=!!w;
    if(pub&&w.code.length<8){pub=false;short++}
    if(pub){pl=personal(w.role,w.pid);if(!pl)pub=false}
-   if(!pub){if(old){await delPacked(fbdb.collection("phonelogin").doc(old.c),old.n);delete idx[k];changed=true}continue}
+   if(!pub){if(old)jobs.push({k,del:old});continue}
    const str=JSON.stringify(pl),h=hsh("v2"+str);
-   if(old&&old.c===w.code&&old.h===h){ok++;continue}
-   if(!old||old.c!==w.code){
-    let taken=false;
-    try{const ex=await fbdb.collection("phonelogin").doc(w.code).get();taken=ex.exists&&ex.data().school!==uid}catch(e){taken=true}
-    if(taken){clash++;if(old){await delPacked(fbdb.collection("phonelogin").doc(old.c),old.n);delete idx[k]}continue}
-   }
+   if(old&&old.c===w.code&&old.h===h){ok++}else jobs.push({k,w,old,pl,str,h});
+   if(++cpu%20===0)await new Promise(r=>setTimeout(r,0));
+  }
+  /* step 2: send them, six at a time */
+  const total=jobs.length;let done=0,next=0;
+  const run=async j=>{const {k,w,old}=j;
+   if(j.del){await delPacked(fbdb.collection("phonelogin").doc(j.del.c),j.del.n);delete idx[k];changed=true;return}
+   if(!old||old.c!==w.code){let taken=false;try{const ex=await fbdb.collection("phonelogin").doc(w.code).get();taken=ex.exists&&ex.data().school!==uid}catch(e){taken=true}
+    if(taken){clash++;if(old){await delPacked(fbdb.collection("phonelogin").doc(old.c),old.n);delete idx[k];changed=true}return}}
    const ref=fbdb.collection("phonelogin").doc(w.code);
    if(old&&old.c===w.code)await delChunks(ref,old.n);
-   const ex={school:uid,role:w.role};if(w.role==="t"){ex.tid=w.pid;ex.sids=pl.p.students.map(x=>x.id)}else ex.sid=w.pid;const n=await putPacked(ref,str,ex);
+   const ex={school:uid,role:w.role};if(w.role==="t"){ex.tid=w.pid;ex.sids=j.pl.p.students.map(x=>x.id)}else ex.sid=w.pid;
+   const n=await putPacked(ref,j.str,ex);
    if(old&&old.c!==w.code)await delPacked(fbdb.collection("phonelogin").doc(old.c),old.n);
-   idx[k]={c:w.code,h,n};ok++;changed=true;
-  }
+   idx[k]={c:w.code,h:j.h,n};ok++;wrote++;changed=true};
+  const worker=async()=>{while(!abort&&next<jobs.length){const j=jobs[next++];try{await run(j)}catch(x){fail++;lastErr=x;if(fail>=5&&wrote===0)abort=true}done++;if(total>20&&done%10===0)setPub("Updating phones: "+done+" / "+total);if(done%20===0){try{saveLocal()}catch(e){}}}};
+  if(total)await Promise.all(Array.from({length:Math.min(6,total)},worker));
   S.logidx=idx;
-  if(changed){dirty=true;push()}
+  const now=Date.now();
+  if(!abort&&(changed||now-(idx.__s||0)>15*60000)){try{await fbdb.collection("phoneshared").doc(uid).set({sync:now},{merge:true});idx.__s=now}catch(e){}}
+  if(changed){dirty=true;chg++;push()}
+  if(abort)throw lastErr||new Error("failed");
+  if(fail){setPub("⚠ "+fail+" phone(s) could not be updated. Will try again.");clearTimeout(pubT);pubT=setTimeout(publishLogins,60000)}
+  else setPub("Phones updated "+new Date().toTimeString().slice(0,5));
   if(short||clash){const lm="Phone logins: "+ok+" published. "+short+" code(s) are shorter than 8 characters and will not work on phones. "+clash+" code(s) are already used by another school.";if(window._lkMsg!==lm){window._lkMsg=lm;toast(lm,2000)}}
- }catch(x){toast("Phone login update failed: "+(x&&x.message||x)+". Check internet and Firestore rules.")}
+ }catch(x){setPub("⚠ Phones not updated");toast("Phone login update failed: "+(x&&x.message||x)+". Check internet and Firestore rules.")}
  finally{pubBusy=false}
 }
 /* ---- phone side ---- */
@@ -2755,7 +2825,7 @@ window.phoneIn=async function(e){
     else{const common=JSON.parse(await readPacked(sd.ref,sd.data()));
      window._roMeta={school:info.school,code:c};
      if(window.offSave)await offSave(c,info.school,pack,common);
-     enterPhone(pack,common);ok=true}}
+     enterPhone(pack,common);ok=true;try{const sy=sd.data().sync||0;if(sy&&window.toast){toast((Date.now()-sy>864e5?"⚠ School data may be old. ":"")+"School data updated: "+new Date(sy).toLocaleString([],{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}),6000)}}catch(x){}}}
   }
  }catch(x){offline=true}
  finally{window._async=false}
@@ -3077,10 +3147,10 @@ window.supOpen=async function(uid){
   const cloud=JSON.parse(r.str);
   if(!cloud||!cloud.S){toast("This school's data could not be read.");return}
   const name=(cloud.S.settings&&cloud.S.settings.school)||uid;
-  saved={S,PH,me,tab,cls,sec,lastCloud,lastN,dirty,SUP:isSuper()};
+  saved={S,PH,me,tab,cls,sec,lastCloud,lastN,curRev,dirty,SUP:isSuper()};
   window.SUPSCHOOL={uid,name,pushes:0};
   S=norm(cloud.S);PH=cloud.PH||{};
-  lastCloud=r.str;lastN=Math.ceil(r.str.length/CH);dirty=false;
+  lastCloud=r.str;lastN=r.n;curRev=r.rev;dirty=false;
   setSup(false);
   me={role:"t",admin:true};cls=1;tab="hm";
   hideGate();bar(name);
@@ -3098,7 +3168,7 @@ window.supClose=async function(){
  window.supLog("close",info.uid,{changes:info.pushes});
  window.SUPSCHOOL=null;
  S=saved.S;PH=saved.PH;me=saved.me;tab=saved.tab;cls=saved.cls;sec=saved.sec;
- lastCloud=saved.lastCloud;lastN=saved.lastN;dirty=saved.dirty;setSup(saved.SUP);saved=null;
+ lastCloud=saved.lastCloud;lastN=saved.lastN;curRev=saved.curRev;dirty=saved.dirty;setSup(saved.SUP);saved=null;
  unbar();
  try{saveLocal()}catch(e){}
  render();
