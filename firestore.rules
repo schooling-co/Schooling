@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function mine(u) { return signedIn() && request.auth.uid == u; }
+    function owner() { return signedIn() && request.auth.uid == 'M1uJCRy8sPO72FOexJVQtR5YKYE2'; }
+    function blocked(u) {
+      return exists(/databases/$(database)/documents/licenses/$(u))
+        && get(/databases/$(database)/documents/licenses/$(u)).data.status in ['suspended', 'removed'];
+    }
+    function paid(u) {
+      return exists(/databases/$(database)/documents/licenses/$(u))
+        && get(/databases/$(database)/documents/licenses/$(u)).data.until > request.time.toMillis()
+        && (!('from' in get(/databases/$(database)/documents/licenses/$(u)).data)
+            || get(/databases/$(database)/documents/licenses/$(u)).data.from <= request.time.toMillis());
+    }
+    function trial(u) {
+      return get(/databases/$(database)/documents/directory/$(u)).data.created + duration.value(3, 'd') > request.time;
+    }
+    // a school is open for phone access only while it is not blocked and is paid or in trial
+    function schoolOpen(u) { return !blocked(u) && (paid(u) || trial(u)); }
+
+    // school data: only its own account, and only while paid or in trial
+    match /schools/{u}/{document=**} {
+      allow read, write: if owner();
+      allow read, write: if mine(u) && !blocked(u) && (paid(u) || trial(u));
+    }
+    // school profile + payment request (school writes, cannot change 'created')
+    match /directory/{u} {
+      allow read: if mine(u) || owner();
+      // no self-create: only the owner can add an account (owner write rule below)
+      allow update: if mine(u) && request.resource.data.created == resource.data.created;
+      allow write: if owner();
+    }
+    // licences: only the owner can write
+    match /licenses/{u} {
+      allow read: if mine(u) || owner();
+      allow write: if owner();
+    }
+    // login log: a signed-in user may add only their own entry; only the owner reads
+    match /logins/{id} {
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'email', 'role', 'at', 'ua'])
+        && request.resource.data.get('ua', '').size() <= 200;
+      allow read: if owner();
+    }
+
+    // PHONE LOGIN, one document per personal code (the code is the document id).
+    // A phone can read only the code it typed. Nobody can list the codes.
+    match /phonelogin/{code} {
+      allow get: if signedIn() && (resource == null || schoolOpen(resource.data.school));
+      allow list: if false;
+      // a new code can be created by a school for itself only
+      allow create: if signedIn() && (request.resource.data.school == request.auth.uid || owner()) && schoolOpen(request.resource.data.school);
+      // an existing code can be changed only by the school that already owns it (no takeover of another school's code)
+      allow update: if signedIn() && (resource.data.school == request.auth.uid || owner())
+        && request.resource.data.school == resource.data.school
+        && schoolOpen(request.resource.data.school);
+      allow delete: if signedIn() && (resource.data.school == request.auth.uid || owner());
+    }
+    match /phonelogin/{code}/c/{i} {
+      allow get: if signedIn() && schoolOpen(get(/databases/$(database)/documents/phonelogin/$(code)).data.school);
+      allow list: if false;
+      allow create, update, delete: if signedIn()
+        && (get(/databases/$(database)/documents/phonelogin/$(code)).data.school == request.auth.uid || owner())
+        && schoolOpen(get(/databases/$(database)/documents/phonelogin/$(code)).data.school);
+    }
+    // shared school information for phones (settings, notices, exams, timetable). Only the school writes it.
+    match /phoneshared/{u} {
+      allow get: if signedIn() && schoolOpen(u);
+      allow list: if false;
+      allow create, update, delete: if (mine(u) || owner()) && schoolOpen(u);
+    }
+    match /phoneshared/{u}/c/{i} {
+      allow get: if signedIn() && schoolOpen(u);
+      allow list: if false;
+      allow create, update, delete: if (mine(u) || owner()) && schoolOpen(u);
+    }
+
+    // PARENT REQUESTS: a phone may add a message or leave request for its own child only (checked against the code's record).
+    // Only the school can read, delete them. Nobody can edit them.
+    match /phonereq/{u}/items/{id} {
+      allow get, list: if mine(u) && schoolOpen(u);
+      allow delete: if mine(u);
+      allow update: if false;
+      allow create: if signedIn()
+        && request.resource.data.school == u
+        && exists(/databases/$(database)/documents/phonelogin/$(request.resource.data.code))
+        && get(/databases/$(database)/documents/phonelogin/$(request.resource.data.code)).data.school == u
+        && get(/databases/$(database)/documents/phonelogin/$(request.resource.data.code)).data.role == 'p'
+        && get(/databases/$(database)/documents/phonelogin/$(request.resource.data.code)).data.sid == request.resource.data.sid
+        && request.resource.data.keys().hasOnly(['school', 'code', 'sid', 'ts', 'kind', 'text', 'reason', 'date'])
+        && request.resource.data.kind in ['msg', 'leave']
+        && request.resource.data.text.size() <= 500
+        && request.resource.data.reason.size() <= 300
+        && (request.resource.data.kind == 'msg' || request.resource.data.date.size() == 10)
+        && schoolOpen(u);
+    }
+
+
+    // TEACHER WRITES: a teacher phone may send an attendance or marks change for its own students only.
+    // The school phone checks each one, applies it and deletes it. Nobody can edit them.
+    function teacherWriteOk(u, d) {
+      let pl = get(/databases/$(database)/documents/phonelogin/$(d.code)).data;
+      return pl.school == u && pl.role == "t" && pl.tid == d.tid && d.sid in pl.sids;
+    }
+    match /phonewrite/{u}/items/{id} {
+      allow get, list: if mine(u) && schoolOpen(u);
+      allow delete: if mine(u);
+      allow update: if false;
+      allow create: if signedIn()
+        && request.resource.data.school == u
+        && request.resource.data.kind in ["att", "mark"]
+        && request.resource.data.value is string
+        && request.resource.data.value.size() <= 3
+        && request.resource.data.get('slot', '').size() <= 10
+        && request.resource.data.get('date', '').size() <= 10
+        && request.resource.data.get('term', '').size() <= 40
+        && request.resource.data.get('subj', '').size() <= 60
+        && request.resource.data.keys().hasOnly(["school", "code", "tid", "ts", "kind", "sid", "slot", "date", "term", "subj", "value"])
+        && teacherWriteOk(u, request.resource.data)
+        && schoolOpen(u);
+    }
+
+    // SUPPORT LOG: every time the owner opens or leaves a school. Only the owner can add or read.
+    match /supportlog/{id} {
+      allow create: if owner() && request.resource.data.by == request.auth.uid;
+      allow read: if owner();
+      allow update, delete: if false;
+    }
+
+    // owner-only vault: school login (email) and code (password) so the owner can hand them over
+    match /vault/{u} {
+      allow read, write: if owner();
+    }
+  }
+}
