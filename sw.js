@@ -1,7 +1,7 @@
 // Schooling offline service worker.
 // Install: saves the whole app shell so it opens with no internet.
 // Fetch: tries the network first (so updates arrive), falls back to the saved copy when offline.
-const V="schooling-v3";
+const V="schooling-56d9a36f";
 const SHELL=["./","./index.html","./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png"];
 self.addEventListener("install",e=>{
   e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));
