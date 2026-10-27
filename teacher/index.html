@@ -4188,6 +4188,16 @@ const se=V.se;V.se=function(){const r=se.apply(this,arguments);if(!isAd())return
 html.launch #app,html.launch .hero,html.launch #gate{animation:iosLaunch .6s var(--ios) both!important}
 @media (prefers-reduced-motion:reduce){html.launch #app,html.launch .hero,html.launch #gate{animation:iosFade .3s ease both!important}}
 </style>
+<style id="resumecss">
+#resume{position:fixed!important;inset:0!important;z-index:99999;display:flex!important;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:radial-gradient(60% 50% at 50% 40%,#2b2a63,#0f0e24);color:#fff;opacity:0;pointer-events:none;font:700 1.15rem system-ui,sans-serif}
+#resume .ri{font-size:64px;transform:scale(.6);opacity:0}
+#resume.go{animation:rsBg .95s var(--ios) both}
+#resume.go .ri{animation:rsIc .95s var(--spr) both}
+@keyframes rsBg{0%{opacity:0}18%{opacity:1}62%{opacity:1;transform:none;filter:none}100%{opacity:0;transform:scale(1.12);filter:blur(8px)}}
+@keyframes rsIc{0%{transform:scale(.6);opacity:0}30%{transform:scale(1.08);opacity:1}62%{transform:scale(1);opacity:1}100%{transform:scale(1.4);opacity:0}}
+</style>
+<script id="resumejs">(function(){var h=0,d=document.documentElement;function go(){if(document.getElementById("splash"))return;var r=document.getElementById("resume");if(!r){r=document.createElement("div");r.id="resume";r.setAttribute("aria-hidden","true");r.innerHTML='<div class="ri">🏫</div><div class="rn"></div>';document.body.appendChild(r)}var n="Schooling";try{var j=JSON.parse(localStorage.getItem("cb2")||"null");if(j&&j.settings&&j.settings.school)n=String(j.settings.school).slice(0,28)}catch(e){}r.querySelector(".rn").textContent=n;r.classList.remove("go");void r.offsetWidth;r.classList.add("go");d.classList.remove("launch");void d.offsetWidth;setTimeout(function(){d.classList.add("launch");setTimeout(function(){d.classList.remove("launch")},900)},520)}
+document.addEventListener("visibilitychange",function(){if(document.hidden){h=Date.now()}else if(h&&Date.now()-h>8000){go()}});addEventListener("pageshow",function(e){if(e.persisted)go()});window.playOpenAnim=go})();</script>
 <script id="ioslaunchjs">(function(){var d=document.documentElement;setTimeout(function(){d.classList.add("launch");setTimeout(function(){d.classList.remove("launch")},900)},1050)})();</script>
 <style id="listcss">
 #app .add[style*="sticky"],#app [style*="position:sticky;bottom"]{position:static!important;bottom:auto!important;margin-top:12px}
