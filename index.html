@@ -6,9 +6,9 @@
  var m=location.pathname.match(/^(.*\/)(teacher|parent|super)(?:\/(?:index\.html)?)?$/),f=m&&m[2],R=m?m[1]+f+"/":"";
  window.__RD=m?m[1]:"";
  var names={teacher:"Schooling Teacher",parent:"Schooling Parent",super:"Schooling Super Admin"};
- function L(rel,href,ty){var l=document.createElement("link");l.rel=rel;l.href=href;if(ty)l.type=ty;document.head.appendChild(l)}
+ function L(rel,href,ty){if(document.querySelector('link[rel="'+rel+'"]'))return;var l=document.createElement("link");l.rel=rel;l.href=href;if(ty)l.type=ty;document.head.appendChild(l)}
  L("manifest",R+"manifest.webmanifest");L("icon",R+"icon-192.png","image/png");L("apple-touch-icon",R+"apple-touch-icon.png");
- if(f){var t=document.createElement("meta");t.name="apple-mobile-web-app-title";t.content=names[f];document.head.appendChild(t)}
+ if(f&&!document.querySelector('meta[name="apple-mobile-web-app-title"]')){var t=document.createElement("meta");t.name="apple-mobile-web-app-title";t.content=names[f];document.head.appendChild(t)}
 })();</script><meta name="theme-color" content="#6d5efc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Schooling</title>
 <script>try{var _cs=localStorage.getItem("cbstyle");if(_cs)document.documentElement.dataset.style=_cs}catch(e){}</script>
