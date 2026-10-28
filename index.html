@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>(function(){
  var m=location.pathname.match(/^(.*\/)(teacher|parent|super)(?:\/(?:index\.html)?)?$/),f=m&&m[2],R=m?m[1]+f+"/":"";
- window.__RD=m?m[1]:"";
+ window.__RD=m?m[1]:"";window.__RF=f?f+"/":"";
  var names={teacher:"Schooling Teacher",parent:"Schooling Student",super:"Schooling Super Admin"};
  function L(rel,href,ty){if(document.querySelector('link[rel="'+rel+'"]'))return;var l=document.createElement("link");l.rel=rel;l.href=href;if(ty)l.type=ty;document.head.appendChild(l)}
  L("manifest",R+"manifest.webmanifest");L("icon",R+"icon-192.png","image/png");L("apple-touch-icon",R+"apple-touch-icon.png");
@@ -1102,7 +1102,7 @@ const flushNow=()=>{try{saveLocal();if(dirty&&fbU){clearTimeout(pushT);push()}}c
 setInterval(()=>{try{if(me)commit(false)}catch(e){}},60000);
 if(Array.isArray(CB))CB.push("gd");
 acctStart();init();setTimeout(()=>{try{if(autoCharge())commit(false)}catch(e){}},600);setInterval(()=>{try{if(autoCharge())commit(false)}catch(e){}},3600000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)billTick()});
-if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register((window.__RD||"")+"sw.js").catch(()=>{}));
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register((window.__RF||"")+"sw.js").catch(()=>{}));
 addEventListener("load",()=>{try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}});
 </script>
 <style id="v2css">
