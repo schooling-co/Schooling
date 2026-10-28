@@ -1,6 +1,6 @@
 {
- "name": "Schooling Parent",
- "short_name": "Parent",
+ "name": "Schooling Student",
+ "short_name": "Student",
  "id": "./",
  "start_url": "./",
  "scope": "./",
