@@ -6,7 +6,7 @@
   "id": "./index.html",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#212124",
+  "background_color": "#0f0e24",
   "theme_color": "#6d5efc",
   "orientation": "any",
   "categories": ["education"],

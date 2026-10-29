@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>(function(){
  var m=location.pathname.match(/^(.*\/)(teacher|parent|super)(?:\/(?:index\.html)?)?$/),f=m&&m[2],R=m?m[1]+f+"/":"";
- window.__RD=m?m[1]:"";window.__RF=f?f+"/":"";
+ window.__RD=m?m[1]:"";
  var names={teacher:"Schooling Teacher",parent:"Schooling Student",super:"Schooling Super Admin"};
  function L(rel,href,ty){if(document.querySelector('link[rel="'+rel+'"]'))return;var l=document.createElement("link");l.rel=rel;l.href=href;if(ty)l.type=ty;document.head.appendChild(l)}
  L("manifest",R+"manifest.webmanifest");L("icon",R+"icon-192.png","image/png");L("apple-touch-icon",R+"apple-touch-icon.png");
@@ -1102,7 +1102,7 @@ const flushNow=()=>{try{saveLocal();if(dirty&&fbU){clearTimeout(pushT);push()}}c
 setInterval(()=>{try{if(me)commit(false)}catch(e){}},60000);
 if(Array.isArray(CB))CB.push("gd");
 acctStart();init();setTimeout(()=>{try{if(autoCharge())commit(false)}catch(e){}},600);setInterval(()=>{try{if(autoCharge())commit(false)}catch(e){}},3600000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)billTick()});
-if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register((window.__RF||"")+"sw.js").catch(()=>{}));
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register((window.__RD||"")+"sw.js").catch(()=>{}));
 addEventListener("load",()=>{try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}});
 </script>
 <style id="v2css">
@@ -1789,7 +1789,7 @@ function feeOv(){
  return `<div class="card"><div class="name">📊 School-wide fee summary</div>
  <div class="fgrid"><div><small>Total charged</small><b data-cu="${r2(ch)}" data-pre="${esc(cur())} ">${mny(ch)}</b></div><div><small>Collected</small><b class="ok" data-cu="${r2(pd)}" data-pre="${esc(cur())} ">${mny(pd)}</b></div><div><small>Outstanding</small><b class="bad" data-cu="${r2(out)}" data-pre="${esc(cur())} ">${mny(out)}</b></div></div>
  <div class="gt" style="margin:10px 0 4px"><i style="width:${pct}%"></i></div><div class="stat">${pct}% collected · ${nd} students have an outstanding balance</div>
- ${nm?`<div class="stat bad" style="margin-top:6px">⚠ ${nm} students have no monthly fee set, so monthly billing is not being applied to them. Open "Monthly fee, auto billing" below and enter each class's fee.</div>`:""}
+ ${nm?`<div class="stat bad" style="margin-top:6px">⚠ ${nm} students have no monthly fee set, so monthly billing is not being applied to them. Neeche "⚙ Fee settings" kholein, phir "Fee structure" mein har class ki fee likhein.</div>`:""}
  <div style="margin-top:8px">${Object.keys(rows).sort((a,b)=>a-b).map(c=>`<div class="fcl"><span>${cn(c)} · ${rows[c].n} students</span><span class="${rows[c].o>0?"bad":"ok"}">${rows[c].o>0?"due "+mny(rows[c].o):"✓ all paid"}</span></div>`).join("")}</div>
  ${def.length?`<div class="name" style="margin:10px 0 2px;font-size:.9rem">Highest outstanding balances</div>${def.map(s=>`<div class="fdf"><div><div class="name" style="font-size:.9rem">${esc(s.name)}</div><div class="stat">${cn(s.cls)}-${esc(s.sec||"A")} · ${mny(bal(s))}</div></div>${s.phone?`<a class="lnk" style="flex:none;min-height:34px;padding:0 12px;font-size:.78rem" target="_blank" rel="noopener" href="https://wa.me/${waNum(s.phone)}?text=${encodeURIComponent(msg(s))}">🟢 Send reminder</a>`:'<span class="stat">No phone</span>'}</div>`).join("")}`:""}
  </div>`}
@@ -4306,6 +4306,74 @@ window.msPick=function(sid){var L=MY(),cl=[...new Set(L.map(function(x){return +
  var chips=cl.length>1?'<div class="mch">'+cl.map(function(k){return '<button type="button" class="pick '+(k===c?"on":"")+'" onclick="msCls('+k+')">'+esc(cn(k))+'</button>'}).join("")+'</div>':'<p class="stat" style="margin:0 0 8px"><b>'+esc(cn(c))+'</b> ke students</p>';
  return chips+'<div class="msl">'+(rows.map(function(x){var n=S.msgs.filter(function(m){return m.sid===x.id}).length;return '<div class="msr '+(x.id===sid?"on":"")+'" onclick="msTh(\''+x.id+'\')">'+av(x)+'<span class="nm"><b>'+esc(x.name)+'</b><span>Roll '+esc(x.roll||"-")+' · Sec '+esc(x.sec||"A")+(x.father?' · '+esc(x.father):'')+'</span></span>'+(n?'<span class="bd">'+n+' 💬</span>':'')+'</div>'}).join("")||'<p class="stat" style="padding:14px">Is class mein koi student nahi.</p>')+'</div>'}
 })();</script>
+<style id="feeclean">.fgrp>summary{font-size:1.05rem}.fgrp .card,.fgrp details.card{box-shadow:none!important;background:transparent!important;border:1px solid var(--line)!important;margin:10px 0!important;border-radius:16px!important}.fgrp>p.stat{margin:4px 0 8px}.fmore{margin:10px 0 0;border-top:1px solid var(--line);padding-top:6px}.fmore>summary{cursor:pointer;font-weight:700;padding:10px 0;color:var(--ink)}.fmore>summary::marker{color:var(--acc,#6d4aff)}</style>
+<script id="feecleanjs">/* Fees tab: group the many tool cards into two clear groups; hide the long list of per-student options behind one button */
+(function(){
+function ttl(e){var h=e.querySelector("summary,.name");return (h?h.textContent:e.textContent).replace(/^[^A-Za-z]+/,"").trim()}
+function group(app,id,head,hint,keys){var els=[].slice.call(app.children).filter(function(e){var t=ttl(e);return keys.some(function(k){return t.indexOf(k)===0})});if(!els.length)return;
+ var d=document.createElement("details");d.className="card fgrp";d.id=id;if(window["_"+id])d.open=true;d.addEventListener("toggle",function(){window["_"+id]=d.open});
+ d.innerHTML='<summary class="name" style="cursor:pointer">'+head+'</summary><p class="stat">'+hint+'</p>';app.insertBefore(d,els[0]);els.forEach(function(e){if(e.tagName==="DETAILS")e.open=false;d.appendChild(e)})}
+function stu(app){[].slice.call(app.children).forEach(function(c){if(!c.classList||!c.classList.contains("card"))return;var pay=c.querySelector('input[id^="pay"]');if(!pay)return;var row=pay.closest(".add"),tot=c.querySelector('input[id^="tot"]'),grid=tot&&tot.closest(".grid");if(!row||!grid||row.parentNode!==c)return;
+ var mv=[],n=row.nextSibling;while(n&&n!==grid){mv.push(n);n=n.nextSibling}if(!mv.length)return;var d=document.createElement("details");d.className="fmore";d.innerHTML="<summary>⋯ Aur options (receipt, charges, print)</summary>";c.insertBefore(d,grid);mv.forEach(function(x){d.appendChild(x)})})}
+function tidy(){if(typeof tab==="undefined"||tab!=="fee"||!isAd())return;var app=document.getElementById("app");if(!app||app.querySelector("#fg1"))return;
+ group(app,"fg1","⚙ Fee settings","Monthly fee, doosri fees, receipt aur card ka design.",["Fee structure","Other fees","Receipt settings","Fee card design"]);
+ group(app,"fg2","🖨 Fee cards print karein","Poori class, chune hue students ya aadhe page ka fee card.",["Fee cards: 2 per page","Fee card + receipt","Selected students"]);
+ stu(app)}
+var r0=window.render;window.render=function(){var r=r0.apply(this,arguments);try{tidy()}catch(e){}return r};
+})();</script>
+<script id="dlfixjs">/* Downloaded print pages: no extra Print/notice bar, fit to phone width */
+(function(){var inj='<meta name="viewport" content="width=device-width,initial-scale=1"><style>.np{display:none!important}@media print{html{zoom:1!important}}</style><script>(function(){function f(){var e=document.documentElement;e.style.zoom=1;var w=Math.max(e.scrollWidth,document.body?document.body.scrollWidth:0),c=window.innerWidth;e.style.zoom=w>c+4?Math.max(.3,c/w):1}addEventListener("load",f);addEventListener("resize",f);addEventListener("beforeprint",function(){document.documentElement.style.zoom=1});addEventListener("afterprint",f)})()<\/script>';
+var d0=window.dl;if(typeof d0!=="function")return;window.dl=function(n,d){try{if(/\.html?$/i.test(String(n))&&/<body/i.test(String(d))&&String(d).indexOf("fixdl")<0){var t=String(d),m=/<!doctype html>/i.exec(t);t=m?t.replace(m[0],m[0]+"<!--fixdl-->"+inj):"<!--fixdl-->"+inj+t;return d0.call(this,n,t)}}catch(e){}return d0.apply(this,arguments)}})();
+</script>
+<script id="updjs">(function(){if(!("serviceWorker" in navigator))return;navigator.serviceWorker.addEventListener("message",function(e){if(!e.data||e.data.t!=="upd")return;if(document.getElementById("updbar"))return;var b=document.createElement("div");b.id="updbar";b.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:9998;background:#111827;color:#fff;border-radius:16px;padding:10px 14px;display:flex;gap:10px;align-items:center;font:600 .9rem system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35)";b.innerHTML='<span style="flex:1">🔄 App ka naya version tayyar hai</span><button style="border:0;border-radius:12px;padding:8px 14px;background:#6d4aff;color:#fff;font-weight:700" onclick="location.reload()">Update</button><button style="border:0;background:none;color:#aaa;font-size:1.1rem" onclick="this.parentNode.remove()" aria-label="Band">✕</button>';document.body.appendChild(b)});addEventListener("load",function(){setTimeout(function(){try{if(navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage({t:"q"})}catch(e){}},2500)})})();</script>
+<script id="dashjs">
+(function(){
+/* Super admin: dashboard, no teacher codes */
+var T0=window.tabs;
+function fixT(t){if(window.isSuper&&isSuper()&&t){var r={};for(var k in t){if(k==="tc")continue;r[k]=k==="sa"?"Dashboard":t[k]}return r}return t}
+if(T0)window.tabs=function(){return fixT(T0.apply(this,arguments))};var sl=window.slimTabs;if(sl)window.slimTabs=function(t){return fixT(sl.apply(this,arguments))};
+var sv=V.sa;
+function num(n){return '<div class="dbn">'+n+'</div>'}
+function tile(ic,n,l,c){return '<div class="dbt" style="--c:'+c+'"><div class="dbi">'+ic+'</div>'+num(n)+'<div class="dbl">'+l+'</div></div>'}
+function dash(){
+ var st=S.students||[],tc=S.teachers||[],sc=(S.inv&&S.inv.schools)||[];
+ var b=st.filter(function(x){return x.g==="M"}).length,g=st.filter(function(x){return x.g==="F"}).length,u=st.length-b-g;
+ var cl={};st.forEach(function(x){cl[x.cls]=1});
+ var t=(typeof esc==="function"?esc:String)((S.settings&&S.settings.school)||"Schooling");
+ var pct=st.length?Math.round(b*100/st.length):0;
+ return '<div class="dbh"><div class="dbs">👑 Super Admin</div><div class="dbt1">'+t+'</div><div class="dbs2">Poora overview ek nazar mein</div></div>'
+ +'<div class="dbg">'+tile("🏫",sc.length,"Schools","#6366f1")+tile("🧑‍🎓",st.length,"Students","#10b981")+tile("👨‍🏫",tc.length,"Teachers","#f59e0b")+tile("📚",Object.keys(cl).length,"Classes","#ec4899")+'</div>'
+ +'<div class="card"><div class="name">👦👧 Boys / Girls</div><div class="dbbar"><i style="width:'+pct+'%"></i></div><p class="stat" style="margin:6px 0 0">Boys <b>'+b+'</b> · Girls <b>'+g+'</b>'+(u?' · Baqi <b>'+u+'</b>':'')+'</p></div>'}
+window.supDash=dash;
+V.sa=V.sch=function(){
+ var h=sv.apply(this,arguments),i=h.indexOf('>Teachers</div>');
+ if(i>0){var j=h.lastIndexOf('<div class="name"',i);h=h.slice(0,j)}
+ /* keep owner cards (if any) first, then dashboard, then the codes */
+ var k=h.indexOf('<div class="card"><div class="name">👑 Super Admin code'),k2=h.indexOf('<div class="card"><div class="name">⚙ My account');
+ var p=(k2>=0&&(k<0||k2<k))?k2:k;
+ return p>=0?h.slice(0,p)+dash()+h.slice(p):dash()+h};
+var s=document.createElement("style");s.textContent=
+'.dbh{margin:4px 2px 12px;padding:18px;border-radius:24px;color:#fff;background:linear-gradient(135deg,#4f46e5,#9333ea 55%,#ec4899);box-shadow:0 10px 30px rgba(99,102,241,.35)}'
++'.dbs{font-size:13px;opacity:.9;font-weight:600}.dbt1{font-size:1.5rem;font-weight:800;margin:4px 0}.dbs2{font-size:13px;opacity:.85}'
++'.dbg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}'
++'.dbt{padding:14px;border-radius:20px;background:var(--card);border:1px solid var(--line);position:relative;overflow:hidden}'
++'.dbt:before{content:"";position:absolute;right:-18px;top:-18px;width:70px;height:70px;border-radius:50%;background:var(--c);opacity:.18}'
++'.dbi{font-size:1.5rem}.dbn{font-size:1.9rem;font-weight:800;color:var(--c);line-height:1.1;margin-top:4px}.dbl{font-size:13px;opacity:.7}'
++'.dbbar{height:12px;border-radius:8px;background:#ec4899;overflow:hidden;margin-top:10px}.dbbar i{display:block;height:100%;background:#3b82f6;border-radius:8px}'
++'body.kbo #app{padding-bottom:45vh!important}';
+var a=document.getElementById("listcss");a?a.parentNode.insertBefore(s,a):document.head.appendChild(s);
+/* no screen jump when an input is tapped: keep it at a steady spot above the keyboard */
+var tm=0;
+document.addEventListener("focusin",function(e){var el=e.target;if(!el||!/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)||el.type==="checkbox"||el.type==="radio")return;
+ var ap=document.getElementById("app");if(!ap||!ap.contains(el))return;document.body.classList.add("kbo");
+ clearTimeout(tm);tm=setTimeout(function(){
+  var vv=window.visualViewport,H=vv?vv.height:innerHeight,r=el.getBoundingClientRect(),ar=ap.getBoundingClientRect();
+  var want=Math.min(H*0.4,H-110),d=r.top-Math.max(ar.top,0)-want+ar.top*0+0;
+  if(r.top<80||r.bottom>H-60)ap.scrollBy({top:r.top-want,behavior:"smooth"});
+  if(window.scrollY)window.scrollTo(0,0)},380)});
+document.addEventListener("focusout",function(){setTimeout(function(){var f=document.activeElement;if(!f||!/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName))document.body.classList.remove("kbo")},250)});
+})();
+</script>
 <style id="listcss">
 #app .add[style*="sticky"],#app [style*="position:sticky;bottom"]{position:static!important;bottom:auto!important;margin-top:12px}
 #app input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;width:26px!important;height:26px!important;min-height:26px!important;border-radius:50%;border:2px solid var(--mut);background:transparent;display:inline-grid;place-content:center;padding:0;margin:0;transition:background-color .15s,border-color .15s,transform .2s var(--spr)}
