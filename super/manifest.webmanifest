@@ -1,35 +1,22 @@
 {
  "name": "Schooling Super Admin",
  "short_name": "Super Admin",
- "description": "Super admin portal of Schooling",
  "id": "./",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
- "orientation": "any",
- "background_color": "#212124",
+ "background_color": "#0f0e24",
  "theme_color": "#6d5efc",
- "categories": [
-  "education"
- ],
  "icons": [
   {
    "src": "icon-192.png",
    "sizes": "192x192",
-   "type": "image/png",
-   "purpose": "any"
+   "type": "image/png"
   },
   {
    "src": "icon-512.png",
    "sizes": "512x512",
-   "type": "image/png",
-   "purpose": "any"
-  },
-  {
-   "src": "icon-512.png",
-   "sizes": "512x512",
-   "type": "image/png",
-   "purpose": "maskable"
+   "type": "image/png"
   }
  ]
 }
