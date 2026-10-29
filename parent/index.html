@@ -4365,13 +4365,35 @@ var a=document.getElementById("listcss");a?a.parentNode.insertBefore(s,a):docume
 /* no screen jump when an input is tapped: keep it at a steady spot above the keyboard */
 var tm=0;
 document.addEventListener("focusin",function(e){var el=e.target;if(!el||!/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)||el.type==="checkbox"||el.type==="radio")return;
- var ap=document.getElementById("app");if(!ap||!ap.contains(el))return;document.body.classList.add("kbo");
+ if(window._rf)return;var ap=document.getElementById("app");if(!ap||!ap.contains(el))return;document.body.classList.add("kbo");
  clearTimeout(tm);tm=setTimeout(function(){
   var vv=window.visualViewport,H=vv?vv.height:innerHeight,r=el.getBoundingClientRect(),ar=ap.getBoundingClientRect();
   var want=Math.min(H*0.4,H-110),d=r.top-Math.max(ar.top,0)-want+ar.top*0+0;
   if(r.top<80||r.bottom>H-60)ap.scrollBy({top:r.top-want,behavior:"smooth"});
   if(window.scrollY)window.scrollTo(0,0)},380)});
 document.addEventListener("focusout",function(){setTimeout(function(){var f=document.activeElement;if(!f||!/^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName))document.body.classList.remove("kbo")},250)});
+})();
+</script>
+<script id="keepscrolljs">
+(function(){
+/* after Enter / Save / Add the page is rebuilt: keep the same scroll spot so the screen does not jump */
+var r0=window.render;
+function key(){try{return String(tab)+"|"+String(typeof cls!=="undefined"?cls:"")+"|"+(me?1:0)}catch(e){return""}}
+window.render=function(){
+ var ap=document.getElementById("app"),k=key(),st=ap?ap.scrollTop:0,wy=window.scrollY||0,ok=ap&&ap.scrollHeight>ap.clientHeight&&!document.getElementById("gate");
+ var ae=document.activeElement,fid=ae&&ae.id&&/^(INPUT|TEXTAREA)$/.test(ae.tagName)&&ae.type!=="checkbox"&&ae.type!=="radio"?ae.id:"";
+ var r=r0.apply(this,arguments);
+ try{if(fid){var fe=document.getElementById(fid);if(fe&&fe!==document.activeElement){window._rf=1;fe.focus({preventScroll:true});window._rf=0}}}catch(e){}
+ try{var a2=document.getElementById("app");
+  if(ok&&a2&&key()===k&&st>0){
+   a2.style.scrollBehavior="auto";a2.scrollTop=st;var last=a2.scrollTop;
+   [30,80,160,300,500].forEach(function(ms){setTimeout(function(){
+    if(window._touching||document.getElementById("app")!==a2||key()!==k)return;
+    if(a2.scrollTop===last&&Math.abs(last-st)>2&&a2.scrollHeight-a2.clientHeight>=st-2){a2.scrollTop=st;last=a2.scrollTop}
+    else if(a2.scrollTop!==last)last=-1},ms)});
+   if(window.scrollY&&!document.body.classList.contains("gateo"))window.scrollTo(0,0)}
+ }catch(e){}
+ return r};
 })();
 </script>
 <style id="listcss">
