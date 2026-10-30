@@ -1,7 +1,7 @@
 {
  "name": "Schooling Student",
  "short_name": "Student",
- "id": "./",
+ "id": "schooling-student-portal",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
