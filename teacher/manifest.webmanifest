@@ -1,7 +1,7 @@
 {
  "name": "Schooling Teacher",
  "short_name": "Teacher",
- "id": "./",
+ "id": "schooling-teacher-portal",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
