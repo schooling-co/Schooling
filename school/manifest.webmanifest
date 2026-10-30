@@ -1,0 +1,39 @@
+{
+ "name": "Schooling",
+ "short_name": "Schooling",
+ "start_url": "./",
+ "scope": "./",
+ "id": "schooling-school-portal",
+ "display": "standalone",
+ "display_override": [
+  "standalone",
+  "minimal-ui"
+ ],
+ "background_color": "#0f0e24",
+ "theme_color": "#6d5efc",
+ "orientation": "any",
+ "categories": [
+  "education"
+ ],
+ "description": "Schooling: school management app for phone and computer",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
