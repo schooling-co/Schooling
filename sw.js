@@ -1,7 +1,7 @@
 // Schooling offline service worker.
 // Opens instantly from the saved copy, then checks the network in the background (stale-while-revalidate).
 // When a newer version is found, the open page is told so it can show an "Update" button.
-const V="schooling-v6";
+const V="schooling-v7";
 const SHELL=["./index.html","./icon-192.png","./icon-512.png","./apple-touch-icon.png"];
 self.addEventListener("install",e=>{
   e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));
