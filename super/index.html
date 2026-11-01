@@ -4489,5 +4489,272 @@ nav button,.nav button,#nav button{transition:transform .25s var(--spr),color .2
 <script id="iosjs">(function(){var a=document.getElementById("app"),k="";function key(){try{return String(tab)+"|"+String(cls)}catch(e){return""}}
 var r0=window.render;if(typeof r0!=="function")return;window.render=function(){var n=key(),ch=n!==k;k=n;var x=r0.apply(this,arguments);if(ch&&a){a.classList.remove("vin");void a.offsetWidth;a.classList.add("vin")}return x}})();</script>
 <style id="perfcss">#app button:not(nav button),#app .btn,#app .ghost,#app .pick,#app summary{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;line-height:1.25;height:auto!important;min-height:46px;max-width:100%}button,.pick,.ghost,.btn,a,summary,select,input,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.card,.card:hover{transition:none!important;transform:none!important}button:active,.pick:active,[onclick]:active{opacity:.7}@media screen{#app .card,main .card{content-visibility:auto;contain-intrinsic-size:auto 120px}}</style>
+<style id="v12css">@keyframes v12in{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+@keyframes v12row{from{opacity:0;transform:translate3d(-10px,0,0)}to{opacity:1;transform:none}}
+@keyframes v12dd{from{opacity:0;transform:translate3d(0,-6px,0)}to{opacity:1;transform:none}}
+@keyframes v12pulse{0%,100%{box-shadow:0 0 0 0 rgba(109,94,252,.35)}50%{box-shadow:0 0 0 9px rgba(109,94,252,0)}}
+@keyframes v12bar{from{background-position:0 0}to{background-position:40px 0}}
+@keyframes v12bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+#app>*{animation:v12in .38s cubic-bezier(.2,.8,.2,1) both!important}
+#app>*:nth-child(2){animation-delay:.04s!important}#app>*:nth-child(3){animation-delay:.08s!important}#app>*:nth-child(4){animation-delay:.12s!important}#app>*:nth-child(5){animation-delay:.16s!important}#app>*:nth-child(6){animation-delay:.2s!important}#app>*:nth-child(7){animation-delay:.24s!important}#app>*:nth-child(n+8){animation-delay:.28s!important}
+#app button,#app .btn,#app .ghost,#app .pick,nav button{transition:transform .14s ease,box-shadow .2s ease,background-color .2s ease,opacity .2s ease}
+#app button:active,#app .btn:active,#app .ghost:active,#app .pick:active,nav button:active{transform:scale(.96)}
+@media(hover:hover){#app .btn:hover,#app .pick:hover,#app .ghost:hover{transform:translateY(-1px)}}
+input,select,textarea{transition:border-color .2s ease,box-shadow .2s ease}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(109,94,252,.18)}
+#app details[open]>*:not(summary){animation:v12dd .28s ease both}
+.v12dz{border:2px dashed var(--line);border-radius:16px;padding:22px 12px;text-align:center;cursor:pointer;transition:border-color .2s,background-color .2s,transform .2s;outline:none}
+.v12dz:focus,.v12dz.on{border-color:#6d5efc;background:rgba(109,94,252,.08)}
+.v12dz.on{transform:scale(1.015);animation:v12pulse 1s ease infinite}
+.v12ic{font-size:34px;line-height:1.2;animation:v12bob 2.2s ease-in-out infinite}
+.v12m{margin:12px 0 4px;padding:10px 12px;border-radius:12px;background:rgba(109,94,252,.08);font-size:14px;animation:v12in .3s ease both}
+.v12m.bad{background:rgba(220,38,38,.1);color:#dc2626}
+.v12w{overflow-x:auto;margin:10px 0;-webkit-overflow-scrolling:touch}
+.v12t{width:100%;border-collapse:collapse;font-size:12.5px}
+.v12t th,.v12t td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.v12t tr{animation:v12row .3s ease both}
+.v12ok{color:#16a34a;font-weight:800}.v12no{color:#dc2626;font-weight:800}.v12sk{color:#d97706;font-weight:800}
+.v12bar{display:inline-block;width:40px;height:8px;border-radius:6px;vertical-align:middle;background:repeating-linear-gradient(45deg,#6d5efc 0 10px,#a79bff 10px 20px);background-size:40px 8px;animation:v12bar .6s linear infinite}
+@media(prefers-reduced-motion:reduce){#app>*,.v12dz,.v12ic,.v12m,.v12t tr,.v12bar,#app details[open]>*:not(summary){animation:none!important}#app button,#app .btn,#app .ghost,#app .pick,nav button{transition:none!important}}
+.v12ov{position:fixed;inset:0;z-index:99990;background:var(--bg);display:flex;flex-direction:column;animation:v12in .25s ease both}
+#v12m{align-items:center;overflow-y:auto;padding:12px;background:rgba(0,0,0,.45);z-index:99995}
+#v12m .v12bx{background:var(--card);border-radius:18px;padding:14px;max-width:760px;width:100%;margin:auto}
+.v12top{display:flex;gap:6px;align-items:center;padding:8px;overflow-x:auto;border-bottom:1px solid var(--line);background:var(--card);padding-top:max(8px,env(safe-area-inset-top))}
+.v12top button,.v12top select,.v12top input{flex:none;min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:13px;white-space:nowrap}
+.v12sc{flex:1;overflow:auto;position:relative;-webkit-overflow-scrolling:touch}
+.v12wr{position:relative;display:inline-block;min-width:100%}
+#v12tab{border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:13px}
+#v12tab th,#v12tab td{height:34px;padding:0 8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--card);color:var(--ink);text-align:left;box-sizing:border-box;cursor:cell}
+#v12tab thead th{position:sticky;top:0;z-index:3;background:var(--bg);font-weight:800;height:36px}
+.v12rn{text-align:center!important;color:var(--mut)!important;background:var(--bg)!important;font-weight:700}
+.v12c0{position:sticky;left:0;z-index:2}.v12c1{position:sticky;left:46px;z-index:2}
+#v12tab thead .v12c0,#v12tab thead .v12c1{z-index:4}
+#v12tab td.s{background:rgba(109,94,252,.14)}
+#v12tab td.a{outline:2px solid #6d5efc;outline-offset:-2px;background:rgba(109,94,252,.08)}
+#v12tab td.ro{color:var(--mut)}#v12tab td.w{background:rgba(217,119,6,.2)}
+.v12rn.on{background:rgba(109,94,252,.25)!important}
+#v12ei{display:none;position:absolute;z-index:6;border:2px solid #6d5efc;border-radius:0;padding:0 8px;font:inherit;font-size:13px;background:var(--card);color:var(--ink);box-sizing:border-box;outline:none}
+.v12stb{padding:6px 10px;font-size:12.5px;color:var(--mut);border-top:1px solid var(--line);background:var(--card);padding-bottom:max(6px,env(safe-area-inset-bottom));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#v12cb{position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;border:0;padding:0}</style>
+<script id="v12">
+(function(){
+if(window.__v12)return;window.__v12=1;
+var $=function(i){return document.getElementById(i)};
+var E=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+var K=function(h){return String(h).toLowerCase().replace(/[^a-z0-9]/g,"")};
+var SYN={name:"name studentname student fullname nameofstudent childname",father:"father fathername fathersname guardian guardianname parent parentname so sonof fatherguardian",mother:"mother mothername mothersname",phone:"phone mobile contact contactno phoneno mobileno mobilenumber phonenumber contactnumber whatsapp whatsappno cell cellno fathercontact",addr:"address addr homeaddress residence",cls:"class classname grade std standard",sec:"section sec",roll:"roll rollno rollnumber",g:"gender sex",dob:"dob dateofbirth birthdate birthday",adm:"admission admissiondate dateofadmission admdate doa",blood:"bloodgroup blood",fee:"fee fees totalfee monthlyfee",bform:"bform bformno bformcnic cnic formb bformnumber",rel:"religion",email:"email emailaddress",prev:"previousschool lastschool prevschool"};
+var MAP={};Object.keys(SYN).forEach(function(k){SYN[k].split(" ").forEach(function(a){MAP[a]=k})});
+var IGN={"":1,sno:1,srno:1,sr:1,serial:1,serialno:1,no:1,sl:1,slno:1};
+var DEFPOS=["name","fee","father","phone","addr"];
+var fd=function(d){return d?String(d).split("-").reverse().join("-"):""};
+var ISO=/^\d{4}-\d\d-\d\d$/;
+/* ---------- custom fields (columns the website did not have) ---------- */
+function cf(){return(S.cfields=S.cfields||[])}
+function cfKey(label){var L=String(label).trim().slice(0,40),n=L.toLowerCase().replace(/[\s._\-\/\\()]+/g,""),f=cf().filter(function(x){return x.l.toLowerCase().replace(/[\s._\-\/\\()]+/g,"")===n})[0];if(f)return f.k;
+var b="cf_"+(K(L)||"c"),k=b,i=1;while(cf().some(function(x){return x.k===k}))k=b+(++i);cf().push({k:k,l:L});return k}
+/* ---------- parsing ---------- */
+function parseText(t,tab){t=String(t).replace(/^\uFEFF/,"");var f=t.split(/\r?\n/)[0]||"",d=tab||f.indexOf("\t")>=0?"\t":(f.split(";").length>f.split(",").length?";":",");
+var rows=[],r=[],c="",q=false;
+for(var i=0;i<t.length;i++){var ch=t.charAt(i);
+if(q){if(ch=='"'){if(t.charAt(i+1)=='"'){c+='"';i++}else q=false}else c+=ch}
+else if(ch=='"'&&!c)q=true;
+else if(ch==d){r.push(c);c=""}
+else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t.charAt(i+1)=="\n")i++;r.push(c);rows.push(r);r=[];c=""}
+else c+=ch}
+if(c!==""||r.length){r.push(c);rows.push(r)}
+return rows.filter(function(r){return r.some(function(x){return String(x).trim()})})}
+function iso(y,m,d){y=+y;m=+m;d=+d;if(y<100)y+=y>40?1900:2000;if(m>12&&d<=12){var t=m;m=d;d=t}if(m<1||m>12||d<1||d>31||y<1900||y>2100)return"";return y+"-"+("0"+m).slice(-2)+"-"+("0"+d).slice(-2)}
+function D(v){if(v===""||v==null)return"";
+if(Object.prototype.toString.call(v)==="[object Date]"){var q=new Date(+v+432e5);return iso(q.getFullYear(),q.getMonth()+1,q.getDate())}
+if(typeof v==="number"){if(v>1&&v<80000){var dt=new Date(Math.round((v-25569)*864e5));return iso(dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate())}return""}
+var s=String(v).trim(),m;
+if(m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))return iso(m[1],m[2],m[3]);
+if(m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/))return iso(m[3],m[2],m[1]);
+if(/^\d{5}$/.test(s))return D(+s);return""}
+function Gd(v){v=K(v);return/^(m|male|boy|b|ladka)$/.test(v)?"M":/^(f|female|girl|g|ladki)$/.test(v)?"F":""}
+function C(v,def){var s=String(v==null?"":v).trim().toLowerCase();if(!s)return def;
+if(/play/.test(s))return -3;if(/nurs/.test(s))return -2;if(/^kg|kinder/.test(s))return -1;if(/prep/.test(s))return 0;
+var m=s.match(/\d+/);if(m)return(+m[0]>=1&&+m[0]<=10)?+m[0]:null;
+var W={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};for(var k in W)if(s.indexOf(k)>=0)return W[k];return null}
+function P(v){var s=String(v==null?"":v).trim().replace(/\.0+$/,"");if(/^3\d{9}$/.test(s))s="0"+s;return s.slice(0,60)}
+function R(v,n){if(Object.prototype.toString.call(v)==="[object Date]")return fd(D(v));return String(v==null?"":v).trim().slice(0,n||300)}
+function build(tbl){if(!tbl.length)return{rows:[],hdr:false,extra:[]};
+var h=tbl[0].map(function(x){return MAP[K(x)]||""}),hasH=h.indexOf("name")>=0,body=hasH?tbl.slice(1):tbl,cols=DEFPOS,extra=[];
+if(hasH){var used={};cols=h.map(function(k,i){if(k&&!used[k]){used[k]=1;return k}
+var lab=String(tbl[0][i]==null?"":tbl[0][i]).trim();if(IGN[K(lab)])return"";
+if(!body.some(function(r){return r[i]!=null&&String(r[i]).trim()!==""}))return"";
+lab=lab||"Column "+(i+1);if(extra.indexOf(lab)<0)extra.push(lab);return"x:"+lab})}
+var rows=[];body.forEach(function(r,j){var o={n:j+(hasH?2:1),x:{}};cols.forEach(function(k,i){if(!k||r[i]==null||String(r[i]).trim()==="")return;if(k.indexOf("x:")===0)o.x[k.slice(2)]=r[i];else o[k]=r[i]});if(o.name)rows.push(o)});
+return{rows:rows,hdr:hasH,extra:extra}}
+function dk(n,f,c){return String(n).trim().toLowerCase()+"|"+String(f||"").trim().toLowerCase()+"|"+c}
+function prep(res){var seen={},dc=1,ds="A";
+try{dc=+cls;if(isNaN(dc))dc=1;ds=(sec&&sec!=="all")?sec:"A"}catch(e){}
+try{S.students.forEach(function(s){seen[dk(s.name,s.father,+s.cls)]=1})}catch(e){}
+var rows=res.rows.map(function(o){var r={n:o.n,name:R(o.name,120),father:R(o.father),mother:R(o.mother),phone:P(o.phone),addr:R(o.addr,500),blood:R(o.blood,10),bform:R(o.bform,40),rel:R(o.rel,40),email:R(o.email,120),prev:R(o.prev,120),roll:R(o.roll,12),err:"",warn:"",dup:false,x:{}};
+r.dob=D(o.dob)||R(o.dob,30);r.adm=D(o.adm)||R(o.adm,30);r.g=Gd(o.g)||R(o.g,20);
+if(r.dob&&!ISO.test(r.dob))r.warn="DOB samajh nahi aayi, jaisi thi waisi rakhi";else if(r.adm&&!ISO.test(r.adm))r.warn="Admission date samajh nahi aayi, jaisi thi waisi rakhi";
+r.fee=+String(o.fee==null?"":o.fee).replace(/[^\d.]/g,"")||0;
+Object.keys(o.x||{}).forEach(function(l){r.x[l]=R(o.x[l],300)});
+var c=C(o.cls,dc);if(c===null){r.err="Class samajh nahi aayi, ye row add nahi hogi";c=dc}r.cls=c;
+var s=String(o.sec||"").trim().toUpperCase().charAt(0);r.sec=/[A-D]/.test(s)?s:ds;
+var k=dk(r.name,r.father,c);if(seen[k])r.dup=true;else seen[k]=1;return r});
+return{rows:rows,hdr:res.hdr,extra:res.extra||[]}}
+/* ---------- value <-> cell ---------- */
+function toS(c,v){v=String(v==null?"":v).trim();switch(c.t){
+case"n":return v?{v:v.slice(0,120)}:{rej:"Naam khali nahi ho sakta"};
+case"c":var q=C(v,null);return q===null?{rej:"Class samajh nahi aayi (1-10, Nursery, KG...)"}:{v:q};
+case"s":var u=v.toUpperCase().charAt(0);return/[A-D]/.test(u)?{v:u}:{rej:"Section A-D hona chahiye"};
+case"g":return{v:Gd(v)||v.slice(0,20)};case"d":return{v:D(v)||v.slice(0,30)};case"r":return{rej:"Ye column sirf dekhne ke liye hai"}}
+return{v:c.k==="phone"?P(v):v.slice(0,c.k==="addr"?500:300)}}
+function toD(c,v){if(v==null)return"";if(c.t==="d")return ISO.test(v)?fd(v):String(v);if(c.t==="g")return v==="M"?"Boy":v==="F"?"Girl":String(v);if(c.t==="c"){try{return cn(v)}catch(e){}}return String(v)}
+function bad(c,v){return v!==""&&v!=null&&((c.t==="d"&&!ISO.test(v))||(c.t==="g"&&v!=="M"&&v!=="F"))}
+var BASE=[{k:"name",l:"Name",w:170,t:"n"},{k:"user",l:"ID",w:90,t:"r"},{k:"cls",l:"Class",w:90,t:"c"},{k:"sec",l:"Sec",w:56,t:"s"},{k:"roll",l:"Roll",w:64},{k:"g",l:"Gender",w:80,t:"g"},{k:"dob",l:"DOB",w:104,t:"d"},{k:"adm",l:"Admission",w:104,t:"d"},{k:"father",l:"Father",w:150},{k:"mother",l:"Mother",w:150},{k:"phone",l:"Phone",w:120},{k:"addr",l:"Address",w:200},{k:"blood",l:"Blood",w:64},{k:"bform",l:"B-Form/CNIC",w:130},{k:"rel",l:"Religion",w:90},{k:"email",l:"Email",w:160},{k:"prev",l:"Previous school",w:160}];
+function cols(){return BASE.concat(cf().map(function(f){return{k:f.k,l:f.l,w:130}}))}
+/* ---------- import dialog ---------- */
+function msg(h,c){var p=$("v12p");if(p)p.innerHTML='<div class="v12m '+(c||"")+'">'+h+'</div>'}
+function show(tbl){var Rr=prep(build(tbl));window._v12=Rr;if(!$("v12p"))return;
+if(!Rr.rows.length){msg("Koi student nahi mila. Pehli row mein heading (Name, Father, Class...) likhein aur Name wala column zaroor rakhein.","bad");return}
+var ok=Rr.rows.filter(function(r){return!r.err&&!r.dup}).length,dup=Rr.rows.filter(function(r){return r.dup}).length,er=Rr.rows.filter(function(r){return r.err}).length;
+var tr=Rr.rows.slice(0,10).map(function(r,i){var cl="";try{cl=cn(r.cls)}catch(e){cl=r.cls}return'<tr style="animation-delay:'+(i*45)+'ms"><td>'+(r.err?'<span class="v12no">⚠</span>':r.dup?'<span class="v12sk">↺</span>':r.warn?'<span class="v12sk">!</span>':'<span class="v12ok">✓</span>')+'</td><td>'+E(r.name)+'</td><td>'+E(r.father)+'</td><td>'+E(cl)+'-'+E(r.sec)+'</td><td>'+E(toD({t:"g"},r.g))+'</td><td>'+E(toD({t:"d"},r.dob))+'</td><td>'+E(toD({t:"d"},r.adm))+'</td><td>'+E(r.phone)+'</td></tr>'}).join("");
+var pr=Rr.rows.filter(function(r){return r.err||r.warn}).slice(0,6).map(function(r){return'<div class="stat">Row '+r.n+' ('+E(r.name)+'): '+E(r.err||r.warn)+'</div>'}).join("");
+$("v12p").innerHTML='<div class="v12m ok"><b>'+Rr.rows.length+'</b> students mile'+(Rr.hdr?'':' (heading nahi mili: Name, Fee, Father, Phone, Address ke hisaab se parha)')+' · <b>'+ok+'</b> naye'+(dup?' · <b>'+dup+'</b> pehle se maujood':'')+(er?' · <b>'+er+'</b> mein masla (skip)':'')+'</div>'+(Rr.extra.length?'<div class="v12m ok">🆕 Ye columns website mein nahi the, khud ban jayenge: <b>'+Rr.extra.map(E).join(", ")+'</b></div>':'')+pr+'<div class="v12w"><table class="v12t"><tr><th></th><th>Name</th><th>Father</th><th>Class</th><th>Gender</th><th>DOB</th><th>Admission</th><th>Phone</th></tr>'+tr+'</table></div>'+(Rr.rows.length>10?'<p class="stat">Pehle 10 dikhaye. Baaki bhi import honge.</p>':'')+(ok||dup?'<label class="stat" style="display:block;margin:6px 0"><input type="checkbox" id="v12dp"> Pehle se maujood students bhi dobara add karein</label><button class="btn" style="width:100%" onclick="v12Go()">✅ Students add karein</button>':'')}
+function loadX(){return new Promise(function(ok,no){if(window.XLSX)return ok();var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";s.onload=ok;s.onerror=function(){no(new Error("x"))};document.head.appendChild(s)})}
+window.v12File=function(f){if(!f)return;var n=f.name.toLowerCase(),rd=new FileReader(),fi=$("v12f");
+if(/\.(xlsx|xls|xlsm|ods)$/.test(n)){msg('<span class="v12bar"></span> Excel file padh raha hoon...');
+loadX().then(function(){rd.onload=function(){try{var wb=XLSX.read(rd.result,{type:"array",cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]];show(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""}))}catch(e){msg("Ye Excel file nahi khuli. Excel mein cells copy karke neeche paste karein, ya file ko CSV save karein.","bad")}};rd.readAsArrayBuffer(f)})
+.catch(function(){msg("Excel reader load nahi hua (internet chahiye). Excel mein cells copy karke neeche paste karein, ya CSV dalein.","bad")})}
+else{rd.onload=function(){show(parseText(rd.result))};rd.readAsText(f)}
+if(fi)fi.value=""};
+var tm;window.v12Text=function(t){clearTimeout(tm);tm=setTimeout(function(){if(String(t).trim())show(parseText(t));else if($("v12p"))$("v12p").innerHTML=""},250)};
+window.v12Paste=function(e){var t=(e.clipboardData||window.clipboardData).getData("text");if(t&&t.trim()){e.preventDefault();var a=$("v12t");if(a)a.value=t;show(parseText(t))}};
+window.v12Drag=function(e,on){e.preventDefault();var z=$("v12dz");if(z)z.classList.toggle("on",!!on)};
+window.v12Drop=function(e){e.preventDefault();var z=$("v12dz");if(z)z.classList.remove("on");var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)return window.v12File(f);var t=e.dataTransfer&&e.dataTransfer.getData("text");if(t)show(parseText(t))};
+document.addEventListener("dragover",function(e){if(!(e.target.closest&&e.target.closest("#v12dz")))e.preventDefault()});
+document.addEventListener("drop",function(e){if(!(e.target.closest&&e.target.closest("#v12dz")))e.preventDefault()});
+function dl(name,text,type){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type||"text/csv"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)}
+window.v12Tpl=function(){dl("students-sample.csv","\uFEFFName,Father Name,Mother Name,Class,Section,Roll No,Gender,Date of Birth,Admission Date,Phone,Address,Blood Group,B-Form,Fee,Hobby,Disability\r\nAli Khan,Ahmad Khan,Fatima Bibi,5,A,1,Boy,15/03/2014,01/04/2022,03001234567,Mohalla Aman,B+,12345-1234567-1,1500,Cricket,None\r\n")};
+window.v12Imp=function(){var d=$("v12m");if(!d){d=document.createElement("div");d.id="v12m";d.className="v12ov";d.innerHTML='<div class="v12bx"><div style="display:flex;justify-content:space-between;align-items:center"><div class="name">📥 Excel / CSV se students import</div><button class="ghost" style="min-height:36px" onclick="v12ImpX()">✕</button></div><p class="stat">Excel file yahan chhodein, ya Excel se cells copy karke paste karein. Pehli row mein heading likhein (Name, Father, Class, DOB, Admission Date, Phone...). <b>Jo column website mein nahi hai (Hobby, Disability...) wo khud naya column ban jayega.</b> Dates din/mahina/saal mein samjhi jati hain. Sirf Name zaroori hai.</p><div id="v12dz" class="v12dz" tabindex="0" ondragover="v12Drag(event,1)" ondragleave="v12Drag(event,0)" ondrop="v12Drop(event)" onclick="document.getElementById(\'v12f\').click()" onpaste="v12Paste(event)"><div class="v12ic">📥</div><b>Excel / CSV file yahan chhodein</b><div class="stat">ya tap karke file chunein</div></div><input id="v12f" type="file" accept=".xlsx,.xls,.csv,.tsv,.txt" hidden onchange="v12File(this.files[0])"><textarea id="v12t" rows="3" placeholder="Ya Excel se copy kiya hua data yahan paste karein" oninput="v12Text(this.value)" aria-label="Paste students list" style="width:100%;margin-top:10px;font:inherit;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);color:var(--ink)"></textarea><button class="ghost" style="width:100%;margin-top:8px" onclick="v12Tpl()">⬇ Sample file download karein</button><div id="v12p"></div></div>';document.body.appendChild(d)}
+d.style.display="flex";if($("v12t"))$("v12t").value="";if($("v12p"))$("v12p").innerHTML=""};
+window.v12ImpX=function(){var d=$("v12m");if(d)d.style.display="none"};
+/* ---------- creating students (reuses the app's own bulk-add so IDs/codes are made normally) ---------- */
+function create(n,c,s){var oc=cls,os=sec,ta=$("bulk"),tmp=0;if(!ta){ta=document.createElement("textarea");ta.id="bulk";ta.style.display="none";document.body.appendChild(ta);tmp=1}
+ta.value=new Array(n+1).join("Naya Student,0,,,\n");var b={};S.students.forEach(function(x){b[x.id]=1});cls=c;sec=s;
+try{window.addBulk()}finally{cls=oc;sec=os}
+var t=$("bulk");if(tmp&&t&&t.style.display==="none")t.remove();
+return S.students.filter(function(x){return!b[x.id]})}
+window.v12Go=function(){var Rr=window._v12;if(!Rr||!can("st"))return;var dp=$("v12dp")&&$("v12dp").checked;
+var ok=Rr.rows.filter(function(r){return!r.err&&(!r.dup||dp)});if(!ok.length)return;
+var grp={},keys={},ids=[];ok.forEach(function(r){var k=r.cls+"|"+r.sec;(grp[k]=grp[k]||[]).push(r)});
+if(Rr.extra.length){if(isAd())Rr.extra.forEach(function(l){keys[l]=cfKey(l)});else toast("Naye columns sirf admin bana sakta hai, unki values add nahi hongi",4000)}
+Object.keys(grp).forEach(function(k){var L=grp[k],a=k.split("|"),c0=0;try{c0=_cfOf(+a[0])}catch(e){}
+create(L.length,+a[0],a[1]).forEach(function(s,i){var r=L[i];if(!r)return;s.name=r.name;s.father=r.father;s.phone=r.phone;s.addr=r.addr;if(r.fee&&!(c0>0))s.fee.total=r.fee;
+["mother","dob","adm","blood","bform","rel","email","prev"].forEach(function(f){if(r[f])s[f]=r[f]});if(r.g)s.g=r.g;
+if(r.roll&&!S.students.some(function(x){return x!==s&&+x.cls===+s.cls&&(x.sec||"A")===(s.sec||"A")&&String(x.roll)===r.roll}))s.roll=r.roll;
+Object.keys(r.x).forEach(function(l){if(keys[l]&&r.x[l]!=="")s[keys[l]]=r.x[l]});ids.push(s.id)})});
+v12ImpX();window._v12=null;commit(false);try{toast("✅ "+ids.length+" students add ho gaye",3500)}catch(e){}
+v12Sheet(ids)};
+/* ---------- the Excel-like sheet ---------- */
+var RH=34,HH=36,Z=null;
+function rowIds(){var q=(Z.q||"").toLowerCase(),f=Z.fc,all=true;try{all=!(me&&me.role==="t"&&!me.admin)}catch(e){}
+return S.students.filter(function(s){if(!all){try{if(!inMy(s.id))return false}catch(e){}}if(f!==""&&+s.cls!==+f)return false;return!q||(s.name+" "+(s.father||"")+" "+(s.phone||"")+" "+(s.user||"")).toLowerCase().indexOf(q)>=0}).map(function(s){return s.id})}
+function rng(){var a=Z.a,f=Z.f;return{r1:Math.min(a.r,f.r),r2:Math.max(a.r,f.r),c1:Math.min(a.c,f.c),c2:Math.max(a.c,f.c)}}
+function head(){var w=46,h='<colgroup><col style="width:46px">';Z.cs.forEach(function(c){h+='<col style="width:'+c.w+'px">';w+=c.w});h+='</colgroup><thead><tr><th class="v12rn v12c0" data-all="1">◢</th>';
+Z.cs.forEach(function(c,i){h+='<th data-c="'+i+'"'+(i===0?' class="v12c1"':'')+'>'+E(c.l)+'</th>'});$("v12tab").innerHTML=h+'</tr></thead><tbody id="v12bd"></tbody>';$("v12tab").style.width=w+"px"}
+function body(){if(Z.S!==S){Z.S=S;Z.ids=rowIds()}var sc=$("v12sc"),n=Z.ids.length,nc=Z.cs.length,f=Math.max(0,Math.floor(sc.scrollTop/RH)-5),l=Math.min(n-1,f+Math.ceil(sc.clientHeight/RH)+10),g=rng(),h='<tr><td colspan="'+(nc+1)+'" style="height:'+f*RH+'px;padding:0;border:0"></td></tr>';Z.f0=f;
+for(var r=f;r<=l;r++){var s=stu(Z.ids[r]);if(!s)continue;h+='<tr style="height:'+RH+'px"><th class="v12rn v12c0'+(r>=g.r1&&r<=g.r2&&g.c1===0&&g.c2===nc-1?' on':'')+'" data-r="'+r+'">'+(r+1)+'</th>';
+for(var c=0;c<nc;c++){var k=Z.cs[c],v=s[k.k],cl=(r>=g.r1&&r<=g.r2&&c>=g.c1&&c<=g.c2?" s":"")+(r===Z.a.r&&c===Z.a.c?" a":"")+(c===0?" v12c1":"")+(k.t==="r"?" ro":"")+(bad(k,v)?" w":"");h+='<td data-r="'+r+'" data-c="'+c+'" class="'+cl+'">'+E(toD(k,v))+'</td>'}h+='</tr>'}
+h+='<tr><td colspan="'+(nc+1)+'" style="height:'+Math.max(0,n-1-l)*RH+'px;padding:0;border:0"></td></tr>';$("v12bd").innerHTML=h;
+var s2=stu(Z.ids[Z.a.r]),c2=Z.cs[Z.a.c],cnt=(g.r2-g.r1+1)*(g.c2-g.c1+1);$("v12tt").textContent=n+" rows";$("v12st").textContent=(s2&&c2?c2.l+": "+toD(c2,s2[c2.k]):"Koi student nahi")+(cnt>1?"   ·   "+cnt+" cells selected":"")}
+function vis(){var sc=$("v12sc"),r=Z.f.r,c=Z.f.c;if(r*RH<sc.scrollTop)sc.scrollTop=r*RH;else if(HH+(r+1)*RH>sc.scrollTop+sc.clientHeight)sc.scrollTop=HH+(r+1)*RH-sc.clientHeight;
+var x=46;for(var i=0;i<c;i++)x+=Z.cs[i].w;var fz=46+Z.cs[0].w,w=Z.cs[c].w;if(c===0)sc.scrollLeft=0;else if(x<sc.scrollLeft+fz)sc.scrollLeft=x-fz;else if(x+w>sc.scrollLeft+sc.clientWidth)sc.scrollLeft=x+w-sc.clientWidth}
+function foc(){try{Z.cb.focus({preventScroll:true})}catch(e){}}
+function go(dr,dc,ext,abs){var n=Z.ids.length;if(!n)return;var f=Z.f,r=abs?dr:f.r+dr,c=abs?dc:f.c+dc;r=Math.max(0,Math.min(n-1,r));c=Math.max(0,Math.min(Z.cs.length-1,c));Z.f={r:r,c:c};if(!ext)Z.a={r:r,c:c};vis();body()}
+function set(s,k,v){if(v===undefined)delete s[k];else s[k]=v}
+function applyCh(list){var un=[],bd=0,why="";list.forEach(function(x){var s=stu(x[0]),c=Z.cs.filter(function(q){return q.k===x[1]})[0];if(!s||!c)return;if(c.t==="r")return;var r=toS(c,x[2]);if(r.rej){bd++;why=r.rej;return}var o=s[c.k];if(o===r.v||(o==null&&r.v===""))return;un.push([x[0],c.k,o,r.v]);set(s,c.k,r.v)});
+if(un.length){Z.un.push(un);Z.re=[];commit(false)}if(bd)toast(why+(bd>1?" ("+bd+" cells chhode)":""),3000);body()}
+function undo(redo){var a=redo?Z.re:Z.un,b=redo?Z.un:Z.re,x=a.pop();if(!x)return;x.forEach(function(u){var s=stu(u[0]);if(s)set(s,u[1],redo?u[3]:u[2])});b.push(x);commit(false);body()}
+function edit(init,mode){if(!Z.ids.length)return;var s=stu(Z.ids[Z.a.r]),c=Z.cs[Z.a.c];if(!s||c.t==="r")return;vis();body();var td=$("v12bd").querySelector('td[data-r="'+Z.a.r+'"][data-c="'+Z.a.c+'"]'),i=$("v12ei");if(!td)return;
+i.style.cssText="display:block;left:"+td.offsetLeft+"px;top:"+td.offsetTop+"px;width:"+Math.max(td.offsetWidth,130)+"px;height:"+td.offsetHeight+"px";i.value=init!=null?init:toD(c,s[c.k]);Z.ed={r:Z.a.r,c:Z.a.c,mode:mode};i.focus();if(init==null)i.select();else i.setSelectionRange(i.value.length,i.value.length)}
+function done(save,dr,dc){var e=Z.ed;if(!e)return;Z.ed=null;var i=$("v12ei"),v=i.value;i.style.display="none";if(save)applyCh([[Z.ids[e.r],Z.cs[e.c].k,v]]);if(dr||dc)go(dr,dc);else body();foc()}
+function sel(){var g=rng(),a=[];for(var r=g.r1;r<=g.r2;r++)for(var c=g.c1;c<=g.c2;c++)a.push([r,c]);return a}
+function clearSel(){applyCh(sel().map(function(p){return[Z.ids[p[0]],Z.cs[p[1]].k,""]}))}
+function copy(cut){var g=rng(),t=[];for(var r=g.r1;r<=g.r2;r++){var row=[],s=stu(Z.ids[r]);for(var c=g.c1;c<=g.c2;c++){var v=s?toD(Z.cs[c],s[Z.cs[c].k]):"";row.push(/[\t\n"]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v)}t.push(row.join("\t"))}
+t=t.join("\n");var cb=Z.cb,ok=false;cb.value=t;cb.select();try{ok=document.execCommand("copy")}catch(e){}if(!ok&&navigator.clipboard)try{navigator.clipboard.writeText(t)}catch(e){}cb.value="";if(cut)clearSel();toast("Copy ho gaya",1200)}
+function fill(right){var g=rng(),l=[];if(right){for(var r=g.r1;r<=g.r2;r++){var s=stu(Z.ids[r]);for(var c=g.c1+1;c<=g.c2;c++)l.push([Z.ids[r],Z.cs[c].k,toD(Z.cs[g.c1],s[Z.cs[g.c1].k])])}}
+else{var s0=stu(Z.ids[g.r1]);for(var r2=g.r1+1;r2<=g.r2;r2++)for(var c2=g.c1;c2<=g.c2;c2++)l.push([Z.ids[r2],Z.cs[c2].k,toD(Z.cs[c2],s0[Z.cs[c2].k])])}applyCh(l)}
+function pasteTxt(t){var tbl=parseText(t,"\t");if(!tbl.length)return;var b=build(tbl);
+if(b.hdr&&tbl.length>1&&tbl[0].filter(function(x){return MAP[K(x)]}).length>=2){toast("Heading mili, import preview khol raha hoon",2500);v12Imp();var a=$("v12t");if(a)a.value=t;show(tbl);return}
+var g=rng(),n=tbl.length,w=Math.max.apply(null,tbl.map(function(r){return r.length})),l=[];
+if(n===1&&w===1&&(g.r2>g.r1||g.c2>g.c1)){sel().forEach(function(p){l.push([Z.ids[p[0]],Z.cs[p[1]].k,tbl[0][0]])});applyCh(l);return}
+var need=g.r1+n-Z.ids.length;if(need>0){var ls=stu(Z.ids[Z.ids.length-1])||{};create(need,Z.fc!==""?+Z.fc:(+ls.cls||1),ls.sec||"A").forEach(function(s){Z.ids.push(s.id)})}
+var ex=0;tbl.forEach(function(row,i){row.forEach(function(v,j){var c=g.c1+j;if(c>=Z.cs.length){ex++;return}l.push([Z.ids[g.r1+i],Z.cs[c].k,v])})});
+Z.a={r:g.r1,c:g.c1};Z.f={r:Math.min(Z.ids.length-1,g.r1+n-1),c:Math.min(Z.cs.length-1,g.c1+w-1)};applyCh(l);if(ex)toast(ex+" extra cells ke liye column nahi tha. Naye columns ke liye Import use karein.",4500)}
+function key(e){if(Z.ed)return;var k=e.key,m=e.ctrlKey||e.metaKey,sh=e.shiftKey,n=Z.ids.length-1,mc=Z.cs.length-1;
+if(k==="Escape"){e.preventDefault();v12Close();return}if(!Z.ids.length)return;
+if(m){var q=k.toLowerCase();
+if(q==="c"||q==="x"){e.preventDefault();copy(q==="x");return}if(q==="v")return;
+if(q==="z"){e.preventDefault();undo(sh);return}if(q==="y"){e.preventDefault();undo(1);return}
+if(q==="a"){e.preventDefault();Z.a={r:0,c:0};Z.f={r:n,c:mc};body();return}
+if(q==="d"||q==="r"){e.preventDefault();fill(q==="r");return}
+if(q==="f"){e.preventDefault();$("v12q").focus();return}
+if(q==="s"){e.preventDefault();toast("Sab kuch save hai ✓",1500);return}
+if(k==="ArrowUp"||k==="ArrowDown"||k==="ArrowLeft"||k==="ArrowRight"){e.preventDefault();go(k==="ArrowUp"?0:k==="ArrowDown"?n:Z.f.r,k==="ArrowLeft"?0:k==="ArrowRight"?mc:Z.f.c,sh,1);return}
+if(k==="Home"){e.preventDefault();go(0,0,sh,1);return}if(k==="End"){e.preventDefault();go(n,mc,sh,1);return}
+if(k===" "){e.preventDefault();Z.a={r:0,c:Z.f.c};Z.f={r:n,c:Z.f.c};body();return}return}
+if(k===" "&&sh){e.preventDefault();Z.a={r:Z.f.r,c:0};Z.f={r:Z.f.r,c:mc};body();return}
+switch(k){case"ArrowDown":e.preventDefault();go(1,0,sh);break;case"ArrowUp":e.preventDefault();go(-1,0,sh);break;case"ArrowRight":e.preventDefault();go(0,1,sh);break;case"ArrowLeft":e.preventDefault();go(0,-1,sh);break;
+case"Enter":e.preventDefault();go(sh?-1:1,0);break;case"Tab":e.preventDefault();go(0,sh?-1:1);break;case"F2":e.preventDefault();edit(null,"edit");break;
+case"Delete":case"Backspace":e.preventDefault();clearSel();break;case"PageDown":e.preventDefault();go(10,0,sh);break;case"PageUp":e.preventDefault();go(-10,0,sh);break;
+case"Home":e.preventDefault();go(Z.f.r,0,sh,1);break;case"End":e.preventDefault();go(Z.f.r,mc,sh,1);break;
+default:if(k.length===1&&!e.altKey){e.preventDefault();edit(k,"enter")}}}
+function wire(d){var sc=$("v12sc"),ei=$("v12ei");Z.cb=$("v12cb");
+Z.cb.addEventListener("keydown",key);Z.cb.addEventListener("paste",function(e){e.preventDefault();var t=(e.clipboardData||window.clipboardData).getData("text");if(t)pasteTxt(t)});
+ei.addEventListener("keydown",function(e){var k=e.key;e.stopPropagation();if(k==="Enter"){e.preventDefault();done(true,e.shiftKey?-1:1,0)}else if(k==="Tab"){e.preventDefault();done(true,0,e.shiftKey?-1:1)}else if(k==="Escape"){e.preventDefault();done(false,0,0)}else if(Z.ed&&Z.ed.mode==="enter"&&/^Arrow(Up|Down|Left|Right)$/.test(k)){e.preventDefault();done(true,k==="ArrowDown"?1:k==="ArrowUp"?-1:0,k==="ArrowRight"?1:k==="ArrowLeft"?-1:0)}});
+ei.addEventListener("blur",function(){if(Z&&Z.ed)done(true,0,0)});
+sc.addEventListener("pointerdown",function(e){var t=e.target.closest&&e.target.closest("td,th");if(!t||!Z.ids.length)return;if(Z.ed)done(true,0,0);var n=Z.ids.length,mc=Z.cs.length-1,ds=t.dataset;
+if(ds.all)Z.a={r:0,c:0},Z.f={r:n-1,c:mc};
+else if(ds.c===undefined)Z.a={r:+ds.r,c:0},Z.f={r:+ds.r,c:mc};
+else if(ds.r===undefined)Z.a={r:0,c:+ds.c},Z.f={r:n-1,c:+ds.c};
+else{var r=+ds.r,c=+ds.c,same=r===Z.a.r&&c===Z.a.c&&r===Z.f.r&&c===Z.f.c;if(e.shiftKey)Z.f={r:r,c:c};else{Z.a={r:r,c:c};Z.f={r:r,c:c}}Z.dr=e.pointerType==="mouse";if(same&&e.pointerType!=="mouse"&&!e.shiftKey){body();edit(null,"edit");return}}
+body();foc()});
+sc.addEventListener("pointermove",function(e){if(!Z.dr||!(e.buttons&1))return;var t=e.target.closest&&e.target.closest("td[data-c]");if(!t)return;var r=+t.dataset.r,c=+t.dataset.c;if(r!==Z.f.r||c!==Z.f.c){Z.f={r:r,c:c};body()}});
+document.addEventListener("pointerup",function(){if(Z)Z.dr=false});
+sc.addEventListener("dblclick",function(e){var t=e.target.closest&&e.target.closest("td");if(t&&!Z.ed)edit(null,"edit")});
+sc.addEventListener("scroll",function(){if(Z.raf)return;Z.raf=requestAnimationFrame(function(){Z.raf=0;if(Math.abs(Math.max(0,Math.floor(sc.scrollTop/RH)-5)-Z.f0)>=3)body()})})}
+function build2(){var d=$("v12s");if(d)return d;d=document.createElement("div");d.id="v12s";d.className="v12ov";d.style.display="none";
+d.innerHTML='<div class="v12top"><button onclick="v12Close()">✕ Band</button><b id="v12tt" style="flex:none"></b><input id="v12q" placeholder="🔍 Search" oninput="v12Q(this.value)" style="width:120px"><select id="v12fc" onchange="v12F(this.value)"></select><button onclick="v12U(0)">↶</button><button onclick="v12U(1)">↷</button><button onclick="v12Row()">➕ Row</button><button id="v12ac" onclick="v12Col()">➕ Column</button><button onclick="v12Pst()">📋 Paste</button><button onclick="v12Imp()">📥 Import</button><button onclick="v12Exp()">⬇ Excel</button><button onclick="v12Help()">⌨</button></div><div id="v12sc" class="v12sc"><div class="v12wr"><table id="v12tab"></table><input id="v12ei" aria-label="Cell"></div></div><div id="v12st" class="v12stb"></div><textarea id="v12cb" inputmode="none" aria-label="Sheet keyboard" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>';
+document.body.appendChild(d);return d}
+window.v12Sheet=function(ids){try{if(window.RO){toast("Is phone par sirf dekh sakte hain, edit nahi",3000);return}if(!can("st")){toast("Aap ko students edit karne ki ijazat nahi",3000);return}
+var d=build2();Z={S:S,ids:[],cs:cols(),a:{r:0,c:0},f:{r:0,c:0},un:[],re:[],q:"",fc:"",ed:null,f0:0};
+if(!$("v12ei").dataset.w){wire(d);$("v12ei").dataset.w=1}else Z.cb=$("v12cb");
+var cl={};S.students.forEach(function(s){cl[+s.cls]=1});$("v12fc").innerHTML='<option value="">Sab classes</option>'+Object.keys(cl).sort(function(a,b){return a-b}).map(function(c){var l=c;try{l=cn(c)}catch(e){}return'<option value="'+c+'">'+E(l)+'</option>'}).join("");
+$("v12q").value="";$("v12ac").style.display=isAd()?"":"none";Z.ids=rowIds();
+if(ids&&ids.length){var p=ids.map(function(i){return Z.ids.indexOf(i)}).filter(function(i){return i>=0});if(p.length){Z.a={r:Math.min.apply(null,p),c:0};Z.f={r:Math.max.apply(null,p),c:Z.cs.length-1}}}
+d.style.display="flex";head();$("v12sc").scrollTop=0;vis();body();foc()}catch(e){try{toast("Sheet kholne mein masla: "+e.message,5000)}catch(x){}}};
+window.v12Close=function(){if(Z&&Z.ed){Z.ed=null;$("v12ei").style.display="none"}var d=$("v12s");if(d)d.style.display="none";try{render()}catch(e){}};
+window.v12Q=function(v){Z.q=v;Z.ids=rowIds();Z.a={r:0,c:0};Z.f={r:0,c:0};$("v12sc").scrollTop=0;body()};
+window.v12F=function(v){Z.fc=v;Z.ids=rowIds();Z.a={r:0,c:0};Z.f={r:0,c:0};$("v12sc").scrollTop=0;body();foc()};
+window.v12U=function(r){undo(r);foc()};
+window.v12Row=function(){var l=stu(Z.ids[Z.ids.length-1])||{},nw=create(1,Z.fc!==""?+Z.fc:(+l.cls||+cls||1),l.sec||"A");if(!nw.length)return;Z.ids.push(nw[0].id);Z.a={r:Z.ids.length-1,c:0};Z.f={r:Z.ids.length-1,c:0};edit(null,"edit")};
+window.v12Col=function(){if(!isAd())return;var l=prompt("Naye column ka naam (jaise Hobby, Disability)");if(!l||!l.trim())return;cfKey(l);commit(false);Z.cs=cols();head();Z.a={r:Z.a.r,c:Z.cs.length-1};Z.f=Z.a;vis();body();foc()};
+window.v12Pst=function(){if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(function(t){if(t)pasteTxt(t);else toast("Clipboard khali hai",2000)}).catch(function(){toast("Paste ki ijazat nahi mili. Import dabake wahan paste karein.",3500);v12Imp()});else v12Imp()};
+window.v12Exp=function(){var a=[Z.cs.map(function(c){return c.l})];Z.ids.forEach(function(id){var s=stu(id);a.push(Z.cs.map(function(c){return s?toD(c,s[c.k]):""}))});
+loadX().then(function(){var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),"Students");XLSX.writeFile(wb,"students.xlsx")}).catch(function(){dl("students.csv","\uFEFF"+a.map(function(r){return r.map(function(v){return'"'+String(v).replace(/"/g,'""')+'"'}).join(",")}).join("\r\n"))})};
+window.v12Help=function(){alert("Excel shortcuts:\nArrows = cell badlein\nShift+Arrows = select\nCtrl+Arrows = kinare tak\nTab / Enter = agla cell\nF2 ya double-click = edit\nLikhna shuru karein = edit\nEsc = cancel/band\nDelete = saaf\nCtrl+C / X / V = copy / cut / paste\nCtrl+Z / Y = undo / redo\nCtrl+A = sab select\nCtrl+D / Ctrl+R = neeche / side fill\nCtrl+F = search\nShift+Space / Ctrl+Space = row / column\n\nMobile: cell par tap = select, dobara tap = edit")};
+/* ---------- students page + edit form ---------- */
+function card(){return'<div class="card v12imp"><div class="name">📋 Excel jaisi sheet</div><p class="stat">Sab students ek sheet mein dekhein aur edit karein. Excel ki list import karein: jo column website mein nahi hoga (Hobby, Disability...) wo khud ban jayega.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="v12Sheet()">📋 Sheet kholein</button><button class="ghost" onclick="v12Imp()">📥 Excel / CSV import</button></div></div>'}
+var se=window.stEdit;if(typeof se==="function")window.stEdit=function(){var h=se.apply(this,arguments);try{return(can("st")?card():"")+h}catch(e){return h}};
+window.v12Set=function(id,k,v){if(!can("st"))return;var s=stu(id),c=cols().filter(function(x){return x.k===k})[0];if(!s||!c)return;var r=toS(c,v);if(r.rej){toast(r.rej,2500);try{render()}catch(e){}return}s[k]=r.v;commit(false)};
+window.detailsEd=function(s){var id=s.id,
+sc='<label class="stat" for="sc_'+id+'">Section</label><select id="sc_'+id+'" style="margin:2px 0 8px" onchange="moveSec(\''+id+'\',this.value)">'+SECS.map(function(x){return'<option '+(x===(s.sec||"A")?"selected":"")+'>'+x+'</option>'}).join("")+'</select>',
+f=function(l,k,ex){return'<label class="stat" for="sf_'+id+'_'+k+'">'+E(l)+'</label><input id="sf_'+id+'_'+k+'" value="'+E(s[k]||"")+'" '+(ex||"")+' style="margin:2px 0 8px" onchange="v12Set(\''+id+'\',\''+k+'\',this.value)">'},
+g='<div class="stat" style="margin:2px 0 4px">Gender</div><div style="display:flex;gap:8px;margin-bottom:8px"><button type="button" class="pick '+(s.g==="M"?"on":"")+'" onclick="setG(\''+id+'\',\'M\')">👦 Boy</button><button type="button" class="pick '+(s.g==="F"?"on":"")+'" onclick="setG(\''+id+'\',\'F\')">👧 Girl</button></div>';
+return'<details style="width:100%" class="v12ed"><summary class="stat" style="cursor:pointer">✏️ Sab details edit karein</summary>'+f("Student name","name")+sc+f("Roll no","roll")+g+f("Date of birth","dob",'type="date"')+f("Admission date","adm",'type="date"')+f("Father's name","father")+f("Mother's name","mother")+f("Contact number","phone",'type="tel" inputmode="tel"')+f("Home address","addr")+f("Blood group","blood")+f("B-Form / CNIC","bform")+f("Religion","rel")+f("Email","email",'type="email"')+f("Previous school","prev")+cf().map(function(c){return f(c.l,c.k)}).join("")+'</details>'};
+var fi=window.famInfo;if(typeof fi==="function")window.famInfo=function(s){var r=fi.apply(this,arguments);
+try{if(me&&me.role==="t"&&!me.admin&&!(S.settings&&S.settings.showContacts))return r}catch(e){}
+return r+[["Mother",s.mother],["DOB",fd(s.dob)],["Admission",fd(s.adm)],["Blood",s.blood]].filter(function(a){return a[1]}).map(function(a){return'<div class="stat">'+a[0]+': '+E(a[1])+'</div>'}).join("")};
+window.__v12api={parseText:parseText,build:build,prep:prep,D:D,Gd:Gd,C:C,P:P,toS:toS,toD:toD,cfKey:cfKey};
+})();
+</script>
 </body>
 </html>
