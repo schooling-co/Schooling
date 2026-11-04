@@ -18,8 +18,3 @@ Pehle se install kiye hue icons delete karke dobara "Add to Home Screen" karein.
 GitHub Pages: repository > Settings > Pages > Deploy from a branch > main / (root) > Save.
 Login page par "Activation Code": school admin ka pehla code 1140 (login ke baad naya code set karna parta hai).
 Data har device ke browser mein save hota hai. Backup: Settings > Download backup.
-
-
-Naya (v12): Students > Search a student mein Excel/CSV import (drag-drop ya paste), har student ki saari details edit (DOB, Admission date, Mother, Blood, B-Form...), aur smooth animations.
-
-v12 update: Students page par 'Sheet kholein' (Excel jaisi sheet, shortcuts), Excel/CSV import (jo naye columns ho wo khud ban jate hain), aur har student ki saari details edit.
